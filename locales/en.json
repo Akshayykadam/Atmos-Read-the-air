@@ -1,0 +1,91 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "ok": "OK",
+        "search": "Search",
+        "settings": "Settings",
+        "language": "Language",
+        "lastUpdated": "Last updated",
+        "ago": "ago",
+        "minutes": "minutes",
+        "hour": "hour",
+        "hours": "hours",
+        "offline": "Offline",
+        "cached": "Cached data"
+    },
+    "dashboard": {
+        "title": "Air Quality",
+        "subtitle": "Real-time AQI for India",
+        "currentAqi": "Current AQI",
+        "dominantPollutant": "Dominant Pollutant",
+        "askAi": "Ask AI for health tips",
+        "changeCity": "Change City",
+        "usingLocation": "Using your location",
+        "refresh": "Refresh"
+    },
+    "categories": {
+        "good": "Good",
+        "moderate": "Moderate",
+        "unhealthySensitive": "Unhealthy for Sensitive Groups",
+        "unhealthy": "Unhealthy",
+        "veryUnhealthy": "Very Unhealthy",
+        "hazardous": "Hazardous"
+    },
+    "health": {
+        "good": "Air quality is satisfactory, and air pollution poses little or no risk.",
+        "moderate": "Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.",
+        "unhealthySensitive": "Members of sensitive groups may experience health effects. The general public is less likely to be affected.",
+        "unhealthy": "Some members of the general public may experience health effects; members of sensitive groups may experience more serious effects.",
+        "veryUnhealthy": "Health alert: The risk of health effects is increased for everyone.",
+        "hazardous": "Health warning of emergency conditions: everyone is more likely to be affected."
+    },
+    "search": {
+        "title": "Search City",
+        "placeholder": "Search for a city...",
+        "recent": "Recent Searches",
+        "popular": "Popular Cities",
+        "noResults": "No cities found",
+        "selectCity": "Select a city to view its air quality"
+    },
+    "chat": {
+        "title": "AI Health Assistant",
+        "placeholder": "Ask about air quality...",
+        "send": "Send",
+        "thinking": "Thinking...",
+        "quickPrompts": {
+            "whyHigh": "Why is AQI high today?",
+            "precautions": "What precautions should I take?",
+            "outdoorSafe": "Is it safe to go outside?",
+            "maskNeeded": "Do I need a mask?"
+        },
+        "disclaimer": "AI responses are for informational purposes only and not medical advice.",
+        "error": "Could not get AI response. Please try again.",
+        "quotaExceeded": "AI is temporarily unavailable. Please try again later."
+    },
+    "errors": {
+        "noNetwork": "No internet connection",
+        "networkError": "Network error. Please check your connection.",
+        "locationDenied": "Location access denied. Please search for a city instead.",
+        "apiFailed": "Could not fetch AQI data. Please try again.",
+        "cityNotFound": "City not found. Please try another city.",
+        "unknownError": "Something went wrong. Please try again."
+    },
+    "pollutants": {
+        "pm25": "PM2.5",
+        "pm10": "PM10",
+        "o3": "Ozone",
+        "no2": "Nitrogen Dioxide",
+        "so2": "Sulfur Dioxide",
+        "co": "Carbon Monoxide"
+    },
+    "languages": {
+        "en": "English",
+        "hi": "हिन्दी",
+        "mr": "मराठी",
+        "ta": "தமிழ்",
+        "te": "తెలుగు"
+    }
+}
