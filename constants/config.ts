@@ -15,6 +15,6 @@ export const AI_CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 export const AQICN_BASE_URL = 'https://api.waqi.info';
 
 // App configuration
-export const DEFAULT_CITY = 'delhi';
+export const DEFAULT_CITY = 'pune';
 export const SUPPORTED_LANGUAGES = ['en', 'hi', 'mr', 'ta', 'te'] as const;
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];

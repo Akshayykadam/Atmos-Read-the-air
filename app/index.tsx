@@ -11,9 +11,12 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+import { GenZTheme } from '../constants/Theme';
 import { AQICard } from '../components/AQICard';
 import { LanguageSelector } from '../components/LanguageSelector';
-import { OfflineBanner } from '../components/OfflineBanner';
 import { AQILoading } from '../components/AQILoading';
 import { AQIData, fetchAQIByCity, fetchAQIByCoordinates } from '../services/aqiApi';
 import { getCurrentLocation, LocationError } from '../services/locationService';
@@ -91,20 +94,26 @@ export default function HomeScreen() {
     };
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
+        <LinearGradient
+            colors={GenZTheme.gradients.background as [string, string]}
+            style={[styles.container, { paddingTop: insets.top }]}
+        >
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.title}>{t('dashboard.title')}</Text>
+                    <Text style={styles.title}>VAYU AI</Text>
                     <Text style={styles.subtitle}>{t('dashboard.subtitle')}</Text>
                 </View>
                 <Pressable
                     style={styles.languageButton}
                     onPress={() => setShowLanguageSelector(true)}
                 >
-                    <Text style={styles.languageButtonText}>
-                        {getLanguageDisplayName(i18n.language)}
-                    </Text>
+                    <BlurView intensity={20} tint="light" style={styles.langBlur}>
+                        <Ionicons name="globe-outline" size={20} color={GenZTheme.colors.dark} style={{ marginRight: 6 }} />
+                        <Text style={styles.languageButtonText}>
+                            {getLanguageDisplayName(i18n.language)}
+                        </Text>
+                    </BlurView>
                 </Pressable>
             </View>
 
@@ -115,17 +124,10 @@ export default function HomeScreen() {
                     <RefreshControl
                         refreshing={isRefreshing}
                         onRefresh={handleRefresh}
-                        tintColor="#1a1a2e"
+                        tintColor={GenZTheme.colors.primary}
                     />
                 }
             >
-                {/* Offline/Cached Banner */}
-                <OfflineBanner
-                    isOffline={isOffline}
-                    isCached={aqiData?.isCached || false}
-                    onRetry={handleRefresh}
-                />
-
                 {/* Loading State */}
                 {isLoading && (
                     <AQILoading message={t('common.loading')} />
@@ -145,6 +147,19 @@ export default function HomeScreen() {
                 {/* AQI Card */}
                 {aqiData && (
                     <>
+                        {/* Change City Button (Floating style) */}
+                        <Pressable style={styles.changeCityButton} onPress={handleCityChange}>
+                            <BlurView intensity={40} tint="light" style={styles.cityBlur}>
+                                <Ionicons name="location-sharp" size={20} color={GenZTheme.colors.primary} style={{ marginRight: 12 }} />
+                                <Text style={styles.changeCityText}>
+                                    {usingLocation
+                                        ? t('dashboard.usingLocation')
+                                        : t('dashboard.changeCity')}
+                                </Text>
+                                <Ionicons name="chevron-forward" size={20} color={GenZTheme.text.secondary} />
+                            </BlurView>
+                        </Pressable>
+
                         <AQICard
                             data={aqiData}
                             onAskAI={handleAskAI}
@@ -152,31 +167,42 @@ export default function HomeScreen() {
                             isRefreshing={isRefreshing}
                         />
 
-                        {/* Change City Button */}
-                        <Pressable style={styles.changeCityButton} onPress={handleCityChange}>
-                            <Text style={styles.changeCityIcon}>📍</Text>
-                            <Text style={styles.changeCityText}>
-                                {usingLocation
-                                    ? t('dashboard.usingLocation')
-                                    : t('dashboard.changeCity')}
-                            </Text>
-                            <Text style={styles.changeCityArrow}>→</Text>
-                        </Pressable>
-
-                        {/* Pollutants Grid */}
+                        {/* Pollutants Grid (Glassmorphism Bento) */}
                         <View style={styles.pollutantsContainer}>
                             <Text style={styles.pollutantsTitle}>{t('dashboard.dominantPollutant')}</Text>
                             <View style={styles.pollutantsGrid}>
                                 {Object.entries(aqiData.pollutants)
                                     .filter(([_, value]) => value !== undefined)
-                                    .map(([key, value]) => (
-                                        <View key={key} style={styles.pollutantItem}>
-                                            <Text style={styles.pollutantValue}>{value}</Text>
-                                            <Text style={styles.pollutantLabel}>
-                                                {t(`pollutants.${key}`)}
-                                            </Text>
-                                        </View>
-                                    ))}
+                                    .map(([key, value]) => {
+                                        // Map pollutant keys to icons
+                                        const getPollutantIcon = (pollutantKey: string) => {
+                                            const iconMap: { [key: string]: keyof typeof Ionicons.glyphMap } = {
+                                                pm25: 'cloudy-outline',
+                                                pm10: 'cloud-outline',
+                                                o3: 'sunny-outline',
+                                                no2: 'flame-outline',
+                                                so2: 'warning-outline',
+                                                co: 'car-outline',
+                                            };
+                                            return iconMap[pollutantKey] || 'ellipse-outline';
+                                        };
+
+                                        return (
+                                            <View key={key} style={styles.pollutantItem}>
+                                                <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
+                                                <Ionicons
+                                                    name={getPollutantIcon(key)}
+                                                    size={24}
+                                                    color={GenZTheme.colors.primary}
+                                                    style={{ marginBottom: 8, opacity: 0.8 }}
+                                                />
+                                                <Text style={styles.pollutantValue}>{String(value)}</Text>
+                                                <Text style={styles.pollutantLabel}>
+                                                    {t(`pollutants.${key}`)}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
                             </View>
                         </View>
                     </>
@@ -189,52 +215,53 @@ export default function HomeScreen() {
                 onClose={() => setShowLanguageSelector(false)}
                 currentLanguage={i18n.language}
             />
-        </View>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a2e',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: '#1a1a2e',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
     },
     title: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: '#FFFFFF',
+        fontSize: 32,
+        fontWeight: '900',
+        color: GenZTheme.colors.dark,
+        letterSpacing: -1,
     },
     subtitle: {
-        fontSize: 14,
-        color: '#AAAAAA',
-        marginTop: 2,
+        fontSize: 16,
+        color: GenZTheme.text.secondary,
+        fontWeight: '600',
     },
     languageButton: {
-        backgroundColor: '#2d2d44',
-        paddingHorizontal: 14,
-        paddingVertical: 8,
         borderRadius: 20,
+        overflow: 'hidden',
+    },
+    langBlur: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: 'rgba(255,255,255,0.3)',
     },
     languageButtonText: {
-        color: '#FFFFFF',
+        color: GenZTheme.colors.dark,
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '700',
     },
     content: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
     },
     contentContainer: {
-        paddingTop: 16,
+        paddingTop: 12,
         paddingBottom: 40,
     },
     loadingContainer: {
@@ -244,7 +271,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: GenZTheme.text.secondary,
     },
     errorContainer: {
         alignItems: 'center',
@@ -257,15 +284,15 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: '#666',
+        color: GenZTheme.text.secondary,
         textAlign: 'center',
         marginBottom: 20,
     },
     retryButton: {
-        backgroundColor: '#1a1a2e',
+        backgroundColor: GenZTheme.colors.primary,
         paddingHorizontal: 24,
         paddingVertical: 12,
-        borderRadius: 10,
+        borderRadius: 16,
     },
     retryButtonText: {
         color: '#FFFFFF',
@@ -273,18 +300,17 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     changeCityButton: {
+        marginHorizontal: 16,
+        marginTop: 8,
+        borderRadius: 24,
+        overflow: 'hidden',
+        marginBottom: 8,
+    },
+    cityBlur: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        marginHorizontal: 16,
-        marginTop: 12,
         padding: 16,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        backgroundColor: 'rgba(255,255,255,0.4)',
     },
     changeCityIcon: {
         fontSize: 20,
@@ -292,33 +318,25 @@ const styles = StyleSheet.create({
     },
     changeCityText: {
         flex: 1,
-        fontSize: 15,
-        color: '#333',
-        fontWeight: '500',
+        fontSize: 16,
+        color: GenZTheme.colors.dark,
+        fontWeight: '700',
     },
     changeCityArrow: {
         fontSize: 18,
-        color: '#999',
+        color: GenZTheme.text.secondary,
     },
     pollutantsContainer: {
         marginHorizontal: 16,
-        marginTop: 16,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        marginTop: 12,
     },
     pollutantsTitle: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#666',
+        fontWeight: '800',
+        color: 'rgba(0,0,0,0.5)',
         marginBottom: 12,
+        marginLeft: 8,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
     },
     pollutantsGrid: {
         flexDirection: 'row',
@@ -326,21 +344,29 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     pollutantItem: {
-        width: '30%',
-        backgroundColor: '#F5F5F5',
-        padding: 12,
-        borderRadius: 10,
+        width: '48%', // 2-column layout
+        aspectRatio: 1.1, // Slightly wider than tall
+        borderRadius: 28,
         alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255,255,255,0.4)', // Slightly more opaque
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.6)',
+        padding: 12,
     },
     pollutantValue: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#1a1a2e',
+        fontSize: 28, // Larger value
+        fontWeight: '900',
+        color: GenZTheme.colors.dark,
+        marginBottom: 4,
     },
     pollutantLabel: {
-        fontSize: 11,
-        color: '#666',
-        marginTop: 4,
+        fontSize: 13, // Slightly larger label
+        color: GenZTheme.colors.dark,
+        fontWeight: '700',
+        opacity: 0.6,
         textAlign: 'center',
+        lineHeight: 18,
     },
 });

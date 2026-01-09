@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import { CitySearch } from '../components/CitySearch';
 import { City } from '../constants/cities';
@@ -27,7 +28,7 @@ export default function SearchScreen() {
             {/* Custom Header with Back Button */}
             <View style={styles.header}>
                 <Pressable style={styles.backButton} onPress={handleBack}>
-                    <Text style={styles.backIcon}>←</Text>
+                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </Pressable>
                 <Text style={styles.headerTitle}>{t('search.title')}</Text>
                 <View style={styles.placeholder} />

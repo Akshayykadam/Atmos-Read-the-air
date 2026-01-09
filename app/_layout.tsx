@@ -22,7 +22,7 @@ export default function RootLayout() {
 
     return (
         <>
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
             <Slot />
         </>
     );

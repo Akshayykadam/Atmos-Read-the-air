@@ -18,9 +18,9 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 50,
         label: 'Good',
         labelKey: 'categories.good',
-        color: '#00E400',
-        backgroundColor: '#E8F5E9',
-        textColor: '#1B5E20',
+        color: '#00D2A0', // Vibrant Mint
+        backgroundColor: '#E6FBF5',
+        textColor: '#004D40',
         healthMessageKey: 'health.good',
     },
     {
@@ -28,9 +28,9 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 100,
         label: 'Moderate',
         labelKey: 'categories.moderate',
-        color: '#FFFF00',
-        backgroundColor: '#FFFDE7',
-        textColor: '#F57F17',
+        color: '#F9D71C', // Gen Z Yellow
+        backgroundColor: '#FFFAEB',
+        textColor: '#8C6C0A',
         healthMessageKey: 'health.moderate',
     },
     {
@@ -38,8 +38,8 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 150,
         label: 'Unhealthy for Sensitive Groups',
         labelKey: 'categories.unhealthySensitive',
-        color: '#FF7E00',
-        backgroundColor: '#FFF3E0',
+        color: '#FF9F43', // Soft Orange
+        backgroundColor: '#FFF5EB',
         textColor: '#E65100',
         healthMessageKey: 'health.unhealthySensitive',
     },
@@ -48,9 +48,9 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 200,
         label: 'Unhealthy',
         labelKey: 'categories.unhealthy',
-        color: '#FF0000',
-        backgroundColor: '#FFEBEE',
-        textColor: '#C62828',
+        color: '#FF6B6B', // Soft Red
+        backgroundColor: '#FFF0F0',
+        textColor: '#C0392B',
         healthMessageKey: 'health.unhealthy',
     },
     {
@@ -58,9 +58,9 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 300,
         label: 'Very Unhealthy',
         labelKey: 'categories.veryUnhealthy',
-        color: '#8F3F97',
-        backgroundColor: '#F3E5F5',
-        textColor: '#6A1B9A',
+        color: '#A29BFE', // Lavender
+        backgroundColor: '#F8F7FF',
+        textColor: '#6C5CE7',
         healthMessageKey: 'health.veryUnhealthy',
     },
     {
@@ -68,9 +68,9 @@ export const AQI_CATEGORIES: AQICategory[] = [
         max: 500,
         label: 'Hazardous',
         labelKey: 'categories.hazardous',
-        color: '#7E0023',
-        backgroundColor: '#FCE4EC',
-        textColor: '#880E4F',
+        color: '#2D3436', // Dark Slate (Neutral but scary)
+        backgroundColor: '#F5F6FA',
+        textColor: '#1A1A1A',
         healthMessageKey: 'health.hazardous',
     },
 ];

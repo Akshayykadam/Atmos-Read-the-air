@@ -17,6 +17,10 @@ export const INDIAN_CITIES: City[] = [
 
     // Major Cities
     { name: 'Pune', nameHi: 'पुणे', state: 'Maharashtra', aqicnId: 'pune' },
+    { name: 'Pune - Shivajinagar', nameHi: 'पुणे - शिवाजीनगर', state: 'Maharashtra', aqicnId: '@8699' },
+    { name: 'Pune - Karve Road', nameHi: 'पुणे - कर्वे रोड', state: 'Maharashtra', aqicnId: '@8700' },
+    { name: 'Pune - Pashan', nameHi: 'पुणे - पाषाण', state: 'Maharashtra', aqicnId: '@8701' },
+    { name: 'Pune - Hadapsar', nameHi: 'पुणे - हडपसर', state: 'Maharashtra', aqicnId: '@8702' },
     { name: 'Ahmedabad', nameHi: 'अहमदाबाद', state: 'Gujarat', aqicnId: 'ahmedabad' },
     { name: 'Jaipur', nameHi: 'जयपुर', state: 'Rajasthan', aqicnId: 'jaipur' },
     { name: 'Lucknow', nameHi: 'लखनऊ', state: 'Uttar Pradesh', aqicnId: 'lucknow' },
