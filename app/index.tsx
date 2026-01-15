@@ -6,8 +6,9 @@ import {
     ScrollView,
     RefreshControl,
     Pressable,
+    Image,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,6 +19,9 @@ import { GenZTheme } from '../constants/Theme';
 import { AQICard } from '../components/AQICard';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { AQILoading } from '../components/AQILoading';
+import { WeatherCard } from '../components/WeatherCard';
+import { HistoryGraph } from '../components/HistoryGraph';
+import { PollutantGrid } from '../components/PollutantGrid';
 import { AQIData, fetchAQIByCity, fetchAQIByCoordinates } from '../services/aqiApi';
 import { getCurrentLocation, LocationError } from '../services/locationService';
 import { getSelectedCity, setSelectedCity } from '../services/cacheService';
@@ -34,36 +38,30 @@ export default function HomeScreen() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isOffline, setIsOffline] = useState(false);
+    // Track current city to avoid reloading
+    const [currentCityId, setCurrentCityId] = useState<string | null>(null);
+
+    // We'll trust currentCityId instead of this for general location boolean
+    // but can keep it for UI states if needed.
     const [usingLocation, setUsingLocation] = useState(false);
     const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
-    const loadAQIData = useCallback(async (forceRefresh = false) => {
+    const loadAQIData = useCallback(async (cityToLoad?: string) => {
         try {
             setError(null);
             setIsOffline(false);
 
-            // Try to get location first
-            try {
-                const location = await getCurrentLocation();
-                const data = await fetchAQIByCoordinates(
-                    location.latitude,
-                    location.longitude
-                );
+            // If explicit city is provided, use it
+            if (cityToLoad) {
+                const data = await fetchAQIByCity(cityToLoad);
                 setAqiData(data);
-                setUsingLocation(true);
+                setUsingLocation(false);
                 return;
-            } catch (locationError) {
-                // Location failed, try saved city or default
-                console.log('Location unavailable, using city:', locationError);
             }
 
-            // Get saved city or use default
-            const savedCity = await getSelectedCity();
-            const cityToUse = savedCity || DEFAULT_CITY;
+            // Otherwise check cache/default logic (only if not passed)
+            // But we will primarily drive this from useFocusEffect now
 
-            const data = await fetchAQIByCity(cityToUse);
-            setAqiData(data);
-            setUsingLocation(false);
         } catch (err) {
             console.error('Error loading AQI:', err);
             setError(t('errors.apiFailed'));
@@ -74,14 +72,68 @@ export default function HomeScreen() {
         }
     }, [t]);
 
-    useEffect(() => {
-        loadAQIData();
-    }, [loadAQIData]);
+    // Main efficient data loader
+    useFocusEffect(
+        useCallback(() => {
+            const checkAndLoad = async () => {
+                const savedCity = await getSelectedCity();
+                const effectiveCityId = savedCity || DEFAULT_CITY;
 
-    const handleRefresh = useCallback(() => {
+                // If we have data and the city hasn't changed, do nothing
+                if (aqiData && effectiveCityId === currentCityId) {
+                    return;
+                }
+
+                // New city or first load
+                setIsLoading(true);
+
+                try {
+                    // Load the effective city
+                    const data = await fetchAQIByCity(effectiveCityId);
+                    setAqiData(data);
+                    setCurrentCityId(effectiveCityId);
+                    setUsingLocation(false);
+
+                } catch (err) {
+                    console.error('Error in checkAndLoad:', err);
+                    setError(t('errors.apiFailed'));
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            checkAndLoad();
+        }, [currentCityId, aqiData]) // Dependencies: run if cityId tracking changes? No, deps of callback.
+    );
+
+    const handleRefresh = useCallback(async () => {
         setIsRefreshing(true);
-        loadAQIData(true);
-    }, [loadAQIData]);
+        // Force reload current city
+        const city = currentCityId === 'GPS_LOCATION' ? null : (currentCityId || DEFAULT_CITY);
+
+        try {
+            if (currentCityId === 'GPS_LOCATION') {
+                try {
+                    const location = await getCurrentLocation();
+                    const data = await fetchAQIByCoordinates(location.latitude, location.longitude);
+                    setAqiData(data);
+                } catch {
+                    // Fallback
+                    const data = await fetchAQIByCity(DEFAULT_CITY);
+                    setAqiData(data);
+                }
+            } else {
+                const data = await fetchAQIByCity(city!);
+                setAqiData(data);
+            }
+        } catch (e) {
+            setError(t('errors.apiFailed'));
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [currentCityId, t]);
+
+
 
     const handleCityChange = () => {
         router.push('/search');
@@ -94,22 +146,36 @@ export default function HomeScreen() {
     };
 
     return (
-        <LinearGradient
-            colors={GenZTheme.gradients.background as [string, string]}
-            style={[styles.container, { paddingTop: insets.top }]}
-        >
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+            {/* Background Map Image - Placeholder removed
+            <Image
+                source={require('../assets/images/pune_map_bg.png')}
+                style={styles.mapBackground}
+                resizeMode="cover"
+            />
+            */}
+            {/* Overlay Gradient for readability - Opaque to match Search Screen */}
+            <LinearGradient
+                colors={[GenZTheme.background, GenZTheme.background]}
+                style={StyleSheet.absoluteFill}
+            />
+
             {/* Header */}
             <View style={styles.header}>
-                <View>
-                    <Text style={styles.title}>VAYU AI</Text>
-                    <Text style={styles.subtitle}>{t('dashboard.subtitle')}</Text>
+                <View style={{ flex: 1, paddingRight: 16 }}>
+                    <Text style={styles.title} numberOfLines={1}>
+                        {aqiData?.city?.split(',')[0] || (currentCityId === 'GPS_LOCATION' ? 'Current Location' : currentCityId) || 'India'}
+                    </Text>
+                    <Text style={styles.subtitle} numberOfLines={2}>
+                        {aqiData?.city || t('dashboard.subtitle')}
+                    </Text>
                 </View>
                 <Pressable
                     style={styles.languageButton}
                     onPress={() => setShowLanguageSelector(true)}
                 >
                     <BlurView intensity={20} tint="light" style={styles.langBlur}>
-                        <Ionicons name="globe-outline" size={20} color={GenZTheme.colors.dark} style={{ marginRight: 6 }} />
+                        <Ionicons name="globe-outline" size={20} color={GenZTheme.text.primary} style={{ marginRight: 6 }} />
                         <Text style={styles.languageButtonText}>
                             {getLanguageDisplayName(i18n.language)}
                         </Text>
@@ -149,7 +215,7 @@ export default function HomeScreen() {
                     <>
                         {/* Change City Button (Floating style) */}
                         <Pressable style={styles.changeCityButton} onPress={handleCityChange}>
-                            <BlurView intensity={40} tint="light" style={styles.cityBlur}>
+                            <BlurView intensity={30} tint="dark" style={styles.cityBlur}>
                                 <Ionicons name="location-sharp" size={20} color={GenZTheme.colors.primary} style={{ marginRight: 12 }} />
                                 <Text style={styles.changeCityText}>
                                     {usingLocation
@@ -167,44 +233,14 @@ export default function HomeScreen() {
                             isRefreshing={isRefreshing}
                         />
 
-                        {/* Pollutants Grid (Glassmorphism Bento) */}
-                        <View style={styles.pollutantsContainer}>
-                            <Text style={styles.pollutantsTitle}>{t('dashboard.dominantPollutant')}</Text>
-                            <View style={styles.pollutantsGrid}>
-                                {Object.entries(aqiData.pollutants)
-                                    .filter(([_, value]) => value !== undefined)
-                                    .map(([key, value]) => {
-                                        // Map pollutant keys to icons
-                                        const getPollutantIcon = (pollutantKey: string) => {
-                                            const iconMap: { [key: string]: keyof typeof Ionicons.glyphMap } = {
-                                                pm25: 'cloudy-outline',
-                                                pm10: 'cloud-outline',
-                                                o3: 'sunny-outline',
-                                                no2: 'flame-outline',
-                                                so2: 'warning-outline',
-                                                co: 'car-outline',
-                                            };
-                                            return iconMap[pollutantKey] || 'ellipse-outline';
-                                        };
+                        {/* Weather Card */}
+                        <WeatherCard data={aqiData.weather} />
 
-                                        return (
-                                            <View key={key} style={styles.pollutantItem}>
-                                                <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
-                                                <Ionicons
-                                                    name={getPollutantIcon(key)}
-                                                    size={24}
-                                                    color={GenZTheme.colors.primary}
-                                                    style={{ marginBottom: 8, opacity: 0.8 }}
-                                                />
-                                                <Text style={styles.pollutantValue}>{String(value)}</Text>
-                                                <Text style={styles.pollutantLabel}>
-                                                    {t(`pollutants.${key}`)}
-                                                </Text>
-                                            </View>
-                                        );
-                                    })}
-                            </View>
-                        </View>
+                        {/* History Graph */}
+                        <HistoryGraph />
+
+                        {/* Pollutants Grid (New List Layout) */}
+                        <PollutantGrid data={aqiData.pollutants} />
                     </>
                 )}
             </ScrollView>
@@ -215,7 +251,7 @@ export default function HomeScreen() {
                 onClose={() => setShowLanguageSelector(false)}
                 currentLanguage={i18n.language}
             />
-        </LinearGradient>
+        </View>
     );
 }
 
@@ -231,15 +267,17 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     title: {
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: '900',
-        color: GenZTheme.colors.dark,
-        letterSpacing: -1,
+        color: '#E0E0E0',
+        letterSpacing: -0.5,
+        marginBottom: 4,
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 12,
         color: GenZTheme.text.secondary,
-        fontWeight: '600',
+        fontWeight: '500',
+        opacity: 0.8,
     },
     languageButton: {
         borderRadius: 20,
@@ -304,13 +342,15 @@ const styles = StyleSheet.create({
         marginTop: 8,
         borderRadius: 24,
         overflow: 'hidden',
-        marginBottom: 8,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     cityBlur: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        backgroundColor: 'rgba(255,255,255,0.4)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
     },
     changeCityIcon: {
         fontSize: 20,
@@ -319,54 +359,18 @@ const styles = StyleSheet.create({
     changeCityText: {
         flex: 1,
         fontSize: 16,
-        color: GenZTheme.colors.dark,
+        color: '#FFFFFF',
         fontWeight: '700',
     },
     changeCityArrow: {
         fontSize: 18,
         color: GenZTheme.text.secondary,
     },
-    pollutantsContainer: {
-        marginHorizontal: 16,
-        marginTop: 12,
-    },
-    pollutantsTitle: {
-        fontSize: 14,
-        fontWeight: '800',
-        color: 'rgba(0,0,0,0.5)',
-        marginBottom: 12,
-        marginLeft: 8,
-        textTransform: 'uppercase',
-    },
-    pollutantsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-    },
-    pollutantItem: {
-        width: '48%', // 2-column layout
-        aspectRatio: 1.1, // Slightly wider than tall
-        borderRadius: 28,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.4)', // Slightly more opaque
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.6)',
-        padding: 12,
-    },
-    pollutantValue: {
-        fontSize: 28, // Larger value
-        fontWeight: '900',
-        color: GenZTheme.colors.dark,
-        marginBottom: 4,
-    },
-    pollutantLabel: {
-        fontSize: 13, // Slightly larger label
-        color: GenZTheme.colors.dark,
-        fontWeight: '700',
-        opacity: 0.6,
-        textAlign: 'center',
-        lineHeight: 18,
+    // Legacy styles removed
+
+    mapBackground: {
+        ...StyleSheet.absoluteFillObject,
+        width: '100%',
+        height: '100%',
     },
 });

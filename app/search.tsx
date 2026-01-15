@@ -7,12 +7,22 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { CitySearch } from '../components/CitySearch';
 import { City } from '../constants/cities';
-import { setSelectedCity } from '../services/cacheService';
+import { getSelectedCity, setSelectedCity } from '../services/cacheService';
+import { GenZTheme } from '../constants/Theme';
 
 export default function SearchScreen() {
     const router = useRouter();
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
+    const [currentCityId, setCurrentCityId] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        const loadCurrent = async () => {
+            const city = await getSelectedCity();
+            setCurrentCityId(city);
+        };
+        loadCurrent();
+    }, []);
 
     const handleSelectCity = async (city: City) => {
         await setSelectedCity(city.aqicnId);
@@ -34,7 +44,7 @@ export default function SearchScreen() {
                 <View style={styles.placeholder} />
             </View>
 
-            <CitySearch onSelectCity={handleSelectCity} />
+            <CitySearch onSelectCity={handleSelectCity} currentCityId={currentCityId} />
         </View>
     );
 }
@@ -42,7 +52,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a2e',
+        backgroundColor: GenZTheme.background,
     },
     header: {
         flexDirection: 'row',
@@ -50,15 +60,17 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#1a1a2e',
+        backgroundColor: GenZTheme.background,
     },
     backButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#2d2d44',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     backIcon: {
         fontSize: 20,

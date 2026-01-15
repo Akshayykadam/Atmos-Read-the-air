@@ -75,16 +75,25 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     container: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#1E1E1E', // Dark grey similar to other cards
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 24,
+        paddingBottom: 40,
         maxHeight: '60%',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -4,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     title: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#1a1a2e',
+        color: '#FFFFFF',
         marginBottom: 20,
         textAlign: 'center',
     },
@@ -94,36 +103,39 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 16,
         paddingHorizontal: 20,
-        borderRadius: 12,
+        borderRadius: 16,
         marginBottom: 8,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: 'rgba(255,255,255,0.05)', // Transparent white
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     languageItemSelected: {
-        backgroundColor: '#E8F5E9',
+        backgroundColor: 'rgba(108, 92, 231, 0.2)', // Primary color opacity
+        borderColor: '#6C4AB6',
     },
     languageText: {
         fontSize: 18,
-        color: '#333333',
+        color: '#CCCCCC',
     },
     languageTextSelected: {
-        color: '#2E7D32',
-        fontWeight: '600',
+        color: '#FFFFFF',
+        fontWeight: '700',
     },
     checkmark: {
         fontSize: 20,
-        color: '#2E7D32',
+        color: '#6C4AB6', // Primary color
         fontWeight: '700',
     },
     closeButton: {
         marginTop: 16,
         paddingVertical: 16,
         alignItems: 'center',
-        backgroundColor: '#1a1a2e',
-        borderRadius: 12,
+        backgroundColor: '#6C4AB6', // Primary color for action
+        borderRadius: 16,
     },
     closeButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
     },
 });

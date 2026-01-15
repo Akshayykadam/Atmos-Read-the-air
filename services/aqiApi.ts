@@ -10,12 +10,20 @@ export interface PollutantData {
     co?: number;
 }
 
+export interface WeatherData {
+    temperature?: number;
+    humidity?: number;
+    wind?: number;
+    pressure?: number;
+}
+
 export interface AQIData {
     aqi: number;
     city: string;
     station: string;
     dominantPollutant: string;
     pollutants: PollutantData;
+    weather: WeatherData;
     time: string;
     timestamp: number;
     isCached: boolean;
@@ -45,6 +53,10 @@ interface AQICNResponse {
             no2?: { v: number };
             so2?: { v: number };
             co?: { v: number };
+            t?: { v: number };
+            h?: { v: number };
+            w?: { v: number };
+            p?: { v: number };
         };
         time: {
             s: string;
@@ -89,6 +101,12 @@ export async function fetchAQIByCity(cityId: string): Promise<AQIData> {
                 no2: data.iaqi.no2?.v,
                 so2: data.iaqi.so2?.v,
                 co: data.iaqi.co?.v,
+            },
+            weather: {
+                temperature: data.iaqi.t?.v,
+                humidity: data.iaqi.h?.v,
+                wind: data.iaqi.w?.v,
+                pressure: data.iaqi.p?.v,
             },
             time: data.time.iso,
             timestamp: data.time.v * 1000,
@@ -146,6 +164,12 @@ export async function fetchAQIByCoordinates(
                 no2: data.iaqi.no2?.v,
                 so2: data.iaqi.so2?.v,
                 co: data.iaqi.co?.v,
+            },
+            weather: {
+                temperature: data.iaqi.t?.v,
+                humidity: data.iaqi.h?.v,
+                wind: data.iaqi.w?.v,
+                pressure: data.iaqi.p?.v,
             },
             time: data.time.iso,
             timestamp: data.time.v * 1000,

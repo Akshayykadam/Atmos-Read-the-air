@@ -1,107 +1,138 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
-import { AQIData } from '../services/aqiApi';
-import { getAQICategory, POLLUTANT_NAMES } from '../constants/aqiScale';
 import { GenZTheme } from '../constants/Theme';
+import { AQIData } from '../services/aqiApi';
 
 interface AQICardProps {
     data: AQIData;
-    onAskAI?: () => void;
-    onRefresh?: () => void;
-    isRefreshing?: boolean;
+    onAskAI: () => void;
+    onRefresh: () => void;
+    isRefreshing: boolean;
 }
 
 const { width } = Dimensions.get('window');
 
+// Helper to get helper text/color based on AQI
+const getAQIStatus = (aqi: number) => {
+    if (aqi <= 50) return { label: 'Good', color: GenZTheme.colors.aqi.good };
+    if (aqi <= 100) return { label: 'Moderate', color: GenZTheme.colors.aqi.moderate };
+    if (aqi <= 150) return { label: 'Poor', color: GenZTheme.colors.aqi.poor };
+    if (aqi <= 200) return { label: 'Unhealthy', color: GenZTheme.colors.aqi.unhealthy };
+    if (aqi <= 300) return { label: 'Severe', color: GenZTheme.colors.aqi.severe };
+    return { label: 'Hazardous', color: GenZTheme.colors.aqi.hazardous };
+};
+
+const getAQIGradient = (aqi: number) => {
+    if (aqi <= 50) return GenZTheme.gradients.good;
+    if (aqi <= 100) return GenZTheme.gradients.moderate;
+    if (aqi > 150) return GenZTheme.gradients.unhealthy; // Grouping poor/unhealthy/hazardous to red-ish for now or custom
+    // Default for others
+    return ['#FF9500', '#FF5E3A']; // Orange for poor
+}
+
 export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps) {
-    const { t } = useTranslation();
-    const category = getAQICategory(data.aqi);
+    const status = getAQIStatus(data.aqi);
+    const bgGradient = getAQIGradient(data.aqi);
 
-    // Determine gradient based on AQI category (simplified mapping)
-    const getGradient = (): [string, string, ...string[]] => {
-        if (data.aqi <= 50) return GenZTheme.gradients.good as [string, string];
-        if (data.aqi <= 100) return GenZTheme.gradients.moderate as [string, string];
-        return GenZTheme.gradients.unhealthy as [string, string];
-    };
-
-    // Clean up city name - remove duplicates and shorten
-    const getCleanCityName = (cityName: string): string => {
-        // Remove "India" suffix and clean up duplicates
-        const parts = cityName.split(',').map(p => p.trim());
-        const uniqueParts = [...new Set(parts)];
-        // Take first 2 unique parts max (e.g., "Shivajinagar, Pune")
-        return uniqueParts.slice(0, 2).join(', ').replace(/, India$/, '');
-    };
+    // Calculate pointer position (percentage)
+    const maxAQI = 350; // Cap visual scale
+    const pointerPosition = Math.min((data.aqi / maxAQI) * 100, 100);
 
     return (
         <View style={styles.container}>
-            <BlurView intensity={80} tint="light" style={styles.blurContainer}>
-                <LinearGradient
-                    colors={getGradient()}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.cardGradient}
-                >
-                    <View style={styles.content}>
-                        {/* Header: City & Status */}
-                        <View style={styles.header}>
-                            <View style={styles.cityInfo}>
-                                <Text style={styles.city} numberOfLines={2}>
-                                    {getCleanCityName(data.city)}
-                                </Text>
-                                <Text style={styles.status} numberOfLines={1}>{t(category.labelKey)}</Text>
-                            </View>
-                            <View style={styles.aqiBadge}>
-                                <Text style={styles.aqiValue}>{data.aqi}</Text>
-                                <Text style={styles.aqiLabel}>AQI</Text>
-                            </View>
+            {/* Dynamic Background Gradient acting as a glow */}
+            <LinearGradient
+                colors={[status.color, 'transparent']}
+                start={{ x: 0.5, y: 1 }}
+                end={{ x: 0.5, y: 0 }}
+                style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}
+            />
+
+            <BlurView intensity={20} tint="dark" style={styles.glass}>
+                {/* Header Section */}
+                <View style={styles.header}>
+                    <View>
+                        <View style={styles.liveIndicator}>
+                            <View style={styles.liveDot} />
+                            <Text style={styles.liveText}>Live AQI</Text>
                         </View>
+                        <Text style={styles.aqiValue}>{data.aqi}</Text>
+                        <Text style={styles.aqiUnit}>AQI (US)</Text>
+                    </View>
 
-                        {/* Pollutant Info */}
-                        <View style={styles.pollutantInfo}>
-                            <Text style={styles.dominantLabel}>
-                                {t('dashboard.dominantPollutant')}
+                    <View style={styles.statusSection}>
+                        <Text style={styles.statusLabel}>Air Quality is</Text>
+                        <View style={[styles.statusBadge, { backgroundColor: status.color + '40' }]}>
+                            <Text style={[styles.statusText, { color: status.color }]}>
+                                {status.label}
                             </Text>
-                            <Text style={styles.dominantValue}>
-                                {POLLUTANT_NAMES[data.dominantPollutant] || data.dominantPollutant.toUpperCase()}
-                            </Text>
-                        </View>
-
-                        {/* Actions */}
-                        <View style={styles.actions}>
-                            <Pressable
-                                style={styles.refreshButton}
-                                onPress={onRefresh}
-                                disabled={isRefreshing}
-                            >
-                                <Ionicons
-                                    name={isRefreshing ? "hourglass-outline" : "refresh-outline"}
-                                    size={22}
-                                    color="#FFFFFF"
-                                />
-                            </Pressable>
-
-                            <Pressable
-                                style={styles.aiButton}
-                                onPress={onAskAI}
-                            >
-                                <LinearGradient
-                                    colors={['#FFFFFF', '#F0F2F5']}
-                                    style={styles.aiGradient}
-                                >
-                                    <Ionicons name="sparkles" size={18} color={GenZTheme.colors.primary} style={{ marginRight: 6 }} />
-                                    <Text style={styles.aiText} numberOfLines={1} adjustsFontSizeToFit>
-                                        {t('dashboard.askAi')}
-                                    </Text>
-                                </LinearGradient>
-                            </Pressable>
                         </View>
                     </View>
-                </LinearGradient>
+                </View>
+
+                {/* Main Pollutants Row */}
+                <View style={styles.pollutantsRow}>
+                    <Text style={styles.pollutantText}>
+                        PM10 : <Text style={styles.pollutantValue}>{data.pollutants.pm10 || '--'} μg/m³</Text>
+                    </Text>
+                    <Text style={styles.pollutantText}>
+                        PM2.5 : <Text style={styles.pollutantValue}>{data.pollutants.pm25 || '--'} μg/m³</Text>
+                    </Text>
+                </View>
+
+                {/* Scale Bar */}
+                <View style={styles.scaleContainer}>
+                    <View style={styles.scaleLabels}>
+                        <Text style={styles.scaleLabel}>Good</Text>
+                        <Text style={styles.scaleLabel}>Mod...</Text>
+                        <Text style={styles.scaleLabel}>Poor</Text>
+                        <Text style={styles.scaleLabel}>Unhea...</Text>
+                        <Text style={styles.scaleLabel}>Seve...</Text>
+                        <Text style={styles.scaleLabel}>Hazar...</Text>
+                    </View>
+
+                    <View style={styles.scaleBar}>
+                        <LinearGradient
+                            colors={[
+                                GenZTheme.colors.aqi.good,
+                                GenZTheme.colors.aqi.moderate,
+                                GenZTheme.colors.aqi.poor,
+                                GenZTheme.colors.aqi.unhealthy,
+                                GenZTheme.colors.aqi.severe,
+                                GenZTheme.colors.aqi.hazardous
+                            ]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.gradientBar}
+                        />
+                        {/* Pointer */}
+                        <View style={[styles.pointer, { left: `${pointerPosition}%` }]}>
+                            <View style={[styles.pointerDot, { backgroundColor: '#fff' }]} />
+                        </View>
+                    </View>
+
+                    <View style={styles.scaleValues}>
+                        <Text style={styles.scaleValue}>0</Text>
+                        <Text style={styles.scaleValue}>50</Text>
+                        <Text style={styles.scaleValue}>100</Text>
+                        <Text style={styles.scaleValue}>150</Text>
+                        <Text style={styles.scaleValue}>200</Text>
+                        <Text style={styles.scaleValue}>300</Text>
+                        <Text style={styles.scaleValue}>301+</Text>
+                    </View>
+                </View>
+
+                {/* Vayu Character - Placeholder removed until correct asset provided
+                <Image
+                   source={require('../assets/images/vayu_character.png')}
+                   style={styles.character}
+                   resizeMode="contain"
+                />
+                */}
+
             </BlurView>
         </View>
     );
@@ -109,138 +140,148 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 16,
-        marginVertical: 12,
         borderRadius: 32,
         overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 12,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 16.00,
-        elevation: 24,
+        marginHorizontal: 16,
+        backgroundColor: 'rgba(43, 49, 56, 0.6)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        minHeight: 320,
     },
-    blurContainer: {
-        borderRadius: 32,
-    },
-    cardGradient: {
-        borderRadius: 32,
+    glass: {
+        flex: 1,
         padding: 24,
-    },
-    content: {
-        gap: 20,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 8,
     },
-    cityInfo: {
-        flex: 1,
-        marginRight: 12,
-    },
-    city: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: '#FFFFFF',
-        letterSpacing: -0.5,
-        marginBottom: 6,
-        textShadowColor: 'rgba(0, 0, 0, 0.15)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 4,
-        lineHeight: 34,
-    },
-    status: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: 'rgba(255, 255, 255, 0.9)',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    aqiBadge: {
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-        borderRadius: 28,
-        paddingHorizontal: 20,
-        paddingVertical: 14,
+    liveIndicator: {
+        flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        shadowColor: 'rgba(0,0,0,0.1)',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 1,
-        shadowRadius: 10,
+        marginBottom: 4,
+    },
+    liveDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#FF5E3A',
+        marginRight: 6,
+    },
+    liveText: {
+        color: GenZTheme.text.secondary,
+        fontSize: 14,
+        fontWeight: '600',
     },
     aqiValue: {
-        fontSize: 36,
-        fontWeight: '900',
-        color: '#FFFFFF',
-        lineHeight: 40,
-    },
-    aqiLabel: {
-        fontSize: 13,
+        fontSize: 100,
         fontWeight: '800',
-        color: 'rgba(255, 255, 255, 0.9)',
-        marginTop: -2,
+        color: GenZTheme.colors.aqi.poor, // Dynamic color usually, but keeping orange/status color
+        lineHeight: 100,
+        marginLeft: -4,
     },
-    pollutantInfo: {
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        borderRadius: 20,
-        padding: 16,
-    },
-    dominantLabel: {
+    aqiUnit: {
         fontSize: 12,
-        color: 'rgba(255, 255, 255, 0.7)',
-        marginBottom: 4,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        color: GenZTheme.text.secondary,
+        marginTop: 0,
+        fontWeight: '600',
     },
-    dominantValue: {
-        fontSize: 24,
-        fontWeight: '800',
-        color: '#FFFFFF',
+    statusSection: {
+        alignItems: 'flex-end',
+        marginTop: 8,
     },
-    actions: {
+    statusLabel: {
+        color: GenZTheme.text.secondary,
+        fontSize: 14,
+        marginBottom: 8,
+    },
+    statusBadge: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 12,
+    },
+    statusText: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    pollutantsRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginTop: 12,
-        height: 64, // Fixed height for alignment
+        marginTop: 32,
+        gap: 24,
     },
-    refreshButton: {
-        width: 64,
-        height: 64,
-        borderRadius: 24,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
-    },
-    aiButton: {
-        flex: 1,
-        borderRadius: 24,
-        shadowColor: "rgba(0,0,0,0.2)",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    aiGradient: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 24,
-        paddingHorizontal: 20,
-    },
-    aiText: {
+    pollutantText: {
+        color: GenZTheme.text.secondary,
         fontSize: 14,
         fontWeight: '700',
-        color: GenZTheme.colors.primary,
-        letterSpacing: 0.3,
+    },
+    pollutantValue: {
+        color: GenZTheme.text.primary,
+        fontWeight: '600',
+    },
+    scaleContainer: {
+        marginTop: 40,
+        position: 'relative',
+        zIndex: 2, // Behind character? No, character is separate
+    },
+    scaleLabels: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+    scaleLabel: {
+        fontSize: 10,
+        color: GenZTheme.text.secondary,
+        width: 40,
         textAlign: 'center',
-        flexShrink: 1,
+    },
+    scaleBar: {
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'center',
+    },
+    gradientBar: {
+        flex: 1,
+        borderRadius: 3,
+    },
+    scaleValues: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 6,
+    },
+    scaleValue: {
+        fontSize: 10,
+        color: GenZTheme.text.secondary,
+        width: 30, // Approximate width to center
+        textAlign: 'center',
+    },
+    pointer: {
+        position: 'absolute',
+        top: -5,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#fff',
+        borderWidth: 3,
+        borderColor: 'rgba(0,0,0,0.2)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 5,
+        marginLeft: -8, // Center it on the position
+    },
+    pointerDot: {
+        flex: 1,
+        borderRadius: 8,
+    },
+    character: {
+        position: 'absolute',
+        bottom: 0,
+        right: '30%', // Position it roughly in the center-right like the design
+        width: 140,
+        height: 180,
+        zIndex: 10, // On top of everything
     },
 });

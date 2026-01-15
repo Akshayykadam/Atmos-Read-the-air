@@ -1,44 +1,53 @@
 
 export const GenZTheme = {
-    background: '#FDFBF7', // Soft Cream / Off-white
+    background: '#121212', // Darker Black
     text: {
-        primary: '#1A1A1A', // Soft Black
-        secondary: '#666666', // Dark Grey
-        light: '#FFFFFF', // White
-        accent: '#6C5CE7', // Soft Purple
+        primary: '#FAFAFA', // Almost White
+        secondary: 'rgba(208, 210, 215, 0.9)', // Light Grey
+        light: '#FFFFFF',
+        accent: '#4BA9FF', // Bright Blue
     },
     cards: {
-        background: '#FFFFFF',
-        shadow: 'rgba(0,0,0,0.05)',
-        border: '#F0F0F0',
+        background: 'rgba(30, 30, 30, 0.6)',
+        shadow: 'none',
+        border: 'rgba(255, 255, 255, 0.1)',
+        backdrop: 'blur(12px)',
     },
     colors: {
-        primary: '#6C4AB6', // Deep vibrant purple
-        secondary: '#B9E0FF', // Icy Blue
-        success: '#00D2A0', // Mint
-        warning: '#F9D71C', // Yellow
-        danger: '#FF6B6B', // Coral
-        info: '#74B9FF', // Sky Blue
-        dark: '#2D3436', // Dark
+        primary: '#4BA9FF', // Bright Blue
+        secondary: '#A0A0A0',
+        success: '#50F0E6', // Cyan-Green
+        warning: '#FAD519', // Yellow
+        danger: '#E95478', // Pinkish-Red
+        info: '#AF52DE', // Purple
+        dark: '#121212',
         light: '#FFFFFF',
+        aqi: {
+            good: '#50F0E6',
+            moderate: '#FAD519',
+            poor: '#FF9500',
+            unhealthy: '#E95478',
+            severe: '#AF52DE',
+            hazardous: '#8B0000',
+        }
     },
     gradients: {
-        primary: ['#A29BFE', '#6C5CE7'],
-        background: ['#E0C3FC', '#8EC5FC'], // Soft purple to blue
-        card: ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.4)'],
-        good: ['#00F260', '#0575E6'], // Green to Blue gradient
-        moderate: ['#F7971E', '#FFD200'], // Orange to Yellow
-        unhealthy: ['#cb2d3e', '#ef473a'], // Red gradient
+        primary: ['#4BA9FF', '#007AFF'],
+        background: ['#121212', '#121212'], // Solid dark
+        card: ['rgba(30, 30, 30, 0.8)', 'rgba(30, 30, 30, 0.4)'],
+        good: ['#50F0E6', '#00F260'],
+        moderate: ['#FAD519', '#F7971E'],
+        unhealthy: ['#E95478', '#cb2d3e'],
     },
     glass: {
         default: {
-            backgroundColor: 'rgba(255,255,255,0.25)',
-            borderColor: 'rgba(255,255,255,0.3)',
+            backgroundColor: 'rgba(20, 20, 20, 0.6)',
+            borderColor: 'rgba(255,255,255,0.1)',
             borderWidth: 1,
         },
         heavy: {
-            backgroundColor: 'rgba(255,255,255,0.6)',
-            borderColor: 'rgba(255,255,255,0.5)',
+            backgroundColor: 'rgba(34, 39, 44, 0.85)',
+            borderColor: 'rgba(255,255,255,0.2)',
             borderWidth: 1,
         }
     },
@@ -47,10 +56,11 @@ export const GenZTheme = {
         m: 16,
         l: 24,
         xl: 32,
+        xxl: 40,
     },
     borderRadius: {
         s: 12,
-        m: 20,
+        m: 16,
         l: 32,
         xl: 50,
     }
