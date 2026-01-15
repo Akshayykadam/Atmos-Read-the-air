@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { searchCities, City, INDIAN_CITIES } from '../constants/cities';
+import { City, INDIAN_CITIES } from '../constants/cities';
 import { getRecentCities, addRecentCity } from '../services/cacheService';
 import { GenZTheme } from '../constants/Theme';
+import { searchStations } from '../services/aqiApi';
 
 interface CitySearchProps {
     onSelectCity: (city: City) => void;
@@ -41,18 +42,33 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
         setRecentCities(cities);
     };
 
-    const handleSearch = (text: string) => {
+    const handleSearch = async (text: string) => {
         setQuery(text);
-        setIsSearching(true);
 
-        if (text.trim().length > 0) {
-            const found = searchCities(text);
-            setResults(found);
-        } else {
+        if (text.trim().length === 0) {
             setResults([]);
+            setIsSearching(false);
+            return;
         }
 
-        setIsSearching(false);
+        setIsSearching(true);
+
+        try {
+            // Debounce could be added here, but for now direct call
+            const stations = await searchStations(text);
+            // Map to City interface
+            const found: City[] = stations.map(s => ({
+                name: s.name,
+                state: s.state,
+                aqicnId: s.aqicnId
+            }));
+            setResults(found);
+        } catch (e) {
+            console.error(e);
+            setResults([]);
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     const handleSelectCity = async (city: City) => {

@@ -41,14 +41,14 @@ export function WeatherCard({ data }: WeatherCardProps) {
                     <View style={styles.separator} />
                     <View style={styles.detailItem}>
                         <Ionicons name="speedometer-outline" size={18} color={GenZTheme.text.secondary} />
-                        <Text style={styles.detailLabel}>Wind Speed</Text>
+                        <Text style={styles.detailLabel}>Wind</Text>
                         <Text style={styles.detailValue}>{data.wind ? `${data.wind} km/h` : '--'}</Text>
                     </View>
                     <View style={styles.separator} />
                     <View style={styles.detailItem}>
-                        <Ionicons name="sunny-outline" size={18} color={GenZTheme.text.secondary} />
-                        <Text style={styles.detailLabel}>UV Index</Text>
-                        <Text style={styles.detailValue}>0</Text>
+                        <Ionicons name="compass-outline" size={18} color={GenZTheme.text.secondary} />
+                        <Text style={styles.detailLabel}>Pressure</Text>
+                        <Text style={styles.detailValue}>{data.pressure ? `${Math.round(data.pressure)} hPa` : '--'}</Text>
                     </View>
                 </View>
             </BlurView>

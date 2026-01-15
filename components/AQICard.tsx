@@ -87,11 +87,11 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                 <View style={styles.scaleContainer}>
                     <View style={styles.scaleLabels}>
                         <Text style={styles.scaleLabel}>Good</Text>
-                        <Text style={styles.scaleLabel}>Mod...</Text>
+                        <Text style={styles.scaleLabel}>OK</Text>
                         <Text style={styles.scaleLabel}>Poor</Text>
-                        <Text style={styles.scaleLabel}>Unhea...</Text>
-                        <Text style={styles.scaleLabel}>Seve...</Text>
-                        <Text style={styles.scaleLabel}>Hazar...</Text>
+                        <Text style={styles.scaleLabel}>Bad</Text>
+                        <Text style={styles.scaleLabel}>Severe</Text>
+                        <Text style={styles.scaleLabel}>Hazard</Text>
                     </View>
 
                     <View style={styles.scaleBar}>

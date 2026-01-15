@@ -3,78 +3,104 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { BlurView } from 'expo-blur';
 import { GenZTheme } from '../constants/Theme';
+import { DailyForecast } from '../services/aqiApi';
 
-// Mock data to match the screenshot roughly
-const hourlyData = [
-    { value: 160, label: '10 PM' },
-    { value: 165, label: '11 PM' },
-    { value: 165, label: '12 AM' },
-    { value: 170, label: '01 AM' },
-    { value: 165, label: '02 AM' },
-    { value: 168, label: '03 AM' },
-    { value: 170, label: '04 AM' },
-    { value: 172, label: '05 AM' },
-    { value: 175, label: '06 AM' },
-    { value: 182, label: '07 AM' },
-    { value: 190, label: '08 AM' },
-    { value: 205, label: '09 AM' }, // Max
-    { value: 160, label: '10 AM' }, // Drop
-    { value: 160, label: '11 AM' },
-    { value: 155, label: '12 PM' },
-    { value: 148, label: '01 PM' },
-    { value: 140, label: '02 PM' },
-    { value: 138, label: '03 PM' },
-    { value: 135, label: '04 PM' },
-    { value: 126, label: '05 PM' }, // Min
-    { value: 126, label: '06 PM' },
-    { value: 130, label: '07 PM' },
-    { value: 148, label: '08 PM' },
-    { value: 145, label: '09 PM' },
-];
+interface HistoryGraphProps {
+    forecast?: DailyForecast;
+    cityName?: string;
+}
 
 const { width } = Dimensions.get('window');
 
-export function HistoryGraph() {
+export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
+    // Use PM2.5 forecast data as our "recent trend"
+    const pm25Data = forecast?.pm25 || [];
+
+    if (pm25Data.length === 0) {
+        return (
+            <View style={styles.container}>
+                <BlurView intensity={20} tint="dark" style={styles.glass}>
+                    <View style={styles.header}>
+                        <Text style={styles.title}>Recent AQI Trend</Text>
+                        <Text style={styles.subtitle}>{cityName || 'PM2.5'}</Text>
+                    </View>
+                    <View style={styles.noDataContainer}>
+                        <Text style={styles.noDataText}>No trend data available</Text>
+                    </View>
+                </BlurView>
+            </View>
+        );
+    }
+
+    // Convert forecast data to chart format
+    const chartData = pm25Data.slice(0, 7).map(item => ({
+        value: item.avg || item.max, // Use average if available, otherwise max
+        label: new Date(item.day).toLocaleDateString('en-US', { weekday: 'short' }),
+        min: item.min,
+        max: item.max,
+    }));
+
+    // Calculate min/max from the data
+    const allValues = chartData.map(d => d.value);
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    const minItem = chartData.find(d => d.value === minValue);
+    const maxItem = chartData.find(d => d.value === maxValue);
+
+    const getAQIColor = (value: number) => {
+        if (value <= 50) return GenZTheme.colors.aqi.good;
+        if (value <= 100) return GenZTheme.colors.aqi.moderate;
+        if (value <= 150) return GenZTheme.colors.aqi.poor;
+        if (value <= 200) return GenZTheme.colors.aqi.unhealthy;
+        if (value <= 300) return GenZTheme.colors.aqi.severe;
+        return GenZTheme.colors.aqi.hazardous;
+    };
+
+    const chartMax = Math.ceil(maxValue * 1.2 / 50) * 50;
+
     return (
         <View style={styles.container}>
             <BlurView intensity={20} tint="dark" style={styles.glass}>
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.title}>Historical Air Quality Data</Text>
-                        <Text style={styles.subtitle}>Pune</Text>
+                        <Text style={styles.title}>Recent AQI Trend</Text>
+                        <Text style={styles.subtitle}>{cityName || 'PM2.5 Data'}</Text>
                     </View>
-                    {/* Min/Max Cards could go here or separate */}
                 </View>
 
                 {/* Min/Max Row */}
                 <View style={styles.statsRow}>
-                    <View style={[styles.statBadge, { borderColor: GenZTheme.colors.aqi.poor }]}>
-                        <View style={[styles.statValueBox, { backgroundColor: GenZTheme.colors.aqi.poor }]}>
-                            <Text style={styles.statValue}>126</Text>
+                    {minItem && (
+                        <View style={[styles.statBadge]}>
+                            <View style={[styles.statValueBox, { backgroundColor: getAQIColor(minValue) }]}>
+                                <Text style={styles.statValue}>{Math.round(minValue)}</Text>
+                            </View>
+                            <View style={styles.statInfo}>
+                                <Text style={styles.statLabel}>Best</Text>
+                                <Text style={styles.statTime}>{minItem.label}</Text>
+                            </View>
                         </View>
-                        <View style={styles.statInfo}>
-                            <Text style={styles.statLabel}>Min.</Text>
-                            <Text style={styles.statTime}>at 6:04 PM</Text>
-                        </View>
-                    </View>
+                    )}
 
-                    <View style={[styles.statBadge, { borderColor: GenZTheme.colors.aqi.severe }]}>
-                        <View style={[styles.statValueBox, { backgroundColor: GenZTheme.colors.aqi.severe }]}>
-                            <Text style={styles.statValue}>205</Text>
+                    {maxItem && (
+                        <View style={[styles.statBadge]}>
+                            <View style={[styles.statValueBox, { backgroundColor: getAQIColor(maxValue) }]}>
+                                <Text style={styles.statValue}>{Math.round(maxValue)}</Text>
+                            </View>
+                            <View style={styles.statInfo}>
+                                <Text style={styles.statLabel}>Worst</Text>
+                                <Text style={styles.statTime}>{maxItem.label}</Text>
+                            </View>
                         </View>
-                        <View style={styles.statInfo}>
-                            <Text style={styles.statLabel}>Max.</Text>
-                            <Text style={styles.statTime}>at 9:04 AM</Text>
-                        </View>
-                    </View>
+                    )}
                 </View>
 
                 <View style={styles.chartContainer}>
                     <LineChart
-                        data={hourlyData}
+                        data={chartData}
                         areaChart
                         curved
-                        curveType={0} // Bezier
+                        curveType={0}
                         color1="#E95478"
                         startFillColor1="#E95478"
                         endFillColor1="rgba(233, 84, 120, 0.1)"
@@ -89,11 +115,11 @@ export function HistoryGraph() {
                         yAxisLabelSuffix=""
                         rulesColor="rgba(255,255,255,0.1)"
                         rulesType="solid"
-                        maxValue={220}
-                        height={200}
-                        width={width - 90} // Ensure it fits comfortably
-                        spacing={40}
-                        endSpacing={40}
+                        maxValue={chartMax}
+                        height={180}
+                        width={width - 90}
+                        spacing={45}
+                        endSpacing={30}
                         hideDataPoints
                         pointerConfig={{
                             pointerStripUptoDataPoint: true,
@@ -103,7 +129,7 @@ export function HistoryGraph() {
                             pointerColor: 'lightgray',
                             radius: 4,
                             pointerLabelWidth: 100,
-                            pointerLabelHeight: 120,
+                            pointerLabelHeight: 90,
                             activatePointersOnLongPress: true,
                             autoAdjustPointerLabelPosition: false,
                             pointerLabelComponent: (items: any) => {
@@ -111,15 +137,18 @@ export function HistoryGraph() {
                                 return (
                                     <View
                                         style={{
-                                            height: 100,
-                                            width: 100,
+                                            height: 80,
+                                            width: 90,
                                             backgroundColor: '#282C3E',
-                                            borderRadius: 4,
+                                            borderRadius: 8,
                                             justifyContent: 'center',
-                                            paddingLeft: 16,
+                                            paddingLeft: 12,
                                         }}>
-                                        <Text style={{ color: 'lightgray', fontSize: 12 }}>{item.label}</Text>
-                                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{item.value}</Text>
+                                        <Text style={{ color: 'lightgray', fontSize: 11 }}>{item.label}</Text>
+                                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{Math.round(item.value)}</Text>
+                                        <Text style={{ color: 'gray', fontSize: 10 }}>
+                                            {item.min} - {item.max}
+                                        </Text>
                                     </View>
                                 );
                             },
@@ -127,7 +156,9 @@ export function HistoryGraph() {
                     />
                 </View>
 
-                <Text style={styles.footerNote}>Want air quality data? <Text style={{ color: GenZTheme.colors.primary }}>AQI Data</Text></Text>
+                <Text style={styles.footerNote}>
+                    7-Day Trend • <Text style={{ color: GenZTheme.colors.primary }}>WAQI Data</Text>
+                </Text>
             </BlurView>
         </View>
     );
@@ -160,9 +191,18 @@ const styles = StyleSheet.create({
         color: GenZTheme.colors.primary,
         fontWeight: '600',
     },
+    noDataContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 60,
+    },
+    noDataText: {
+        color: GenZTheme.text.secondary,
+        fontSize: 13,
+    },
     statsRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between', // Or flex-start with gap
+        justifyContent: 'space-between',
         gap: 12,
         marginBottom: 24,
     },
@@ -173,7 +213,6 @@ const styles = StyleSheet.create({
         padding: 8,
         flexDirection: 'row',
         alignItems: 'center',
-        borderLeftWidth: 0, // Design shows border maybe?
     },
     statValueBox: {
         width: 48,

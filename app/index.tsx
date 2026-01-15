@@ -22,7 +22,12 @@ import { AQILoading } from '../components/AQILoading';
 import { WeatherCard } from '../components/WeatherCard';
 import { HistoryGraph } from '../components/HistoryGraph';
 import { PollutantGrid } from '../components/PollutantGrid';
-import { AQIData, fetchAQIByCity, fetchAQIByCoordinates } from '../services/aqiApi';
+import { ForecastCard } from '../components/ForecastCard';
+import { HealthGuide } from '../components/HealthGuide';
+import { ForecastGraph } from '../components/ForecastGraph';
+import { MapCard } from '../components/MapCard';
+import { StationPicker } from '../components/StationPicker';
+import { AQIData, fetchAQIByCity, fetchAQIByCoordinates, fetchStationsInBounds, MapStation } from '../services/aqiApi';
 import { getCurrentLocation, LocationError } from '../services/locationService';
 import { getSelectedCity, setSelectedCity } from '../services/cacheService';
 import { DEFAULT_CITY } from '../constants/config';
@@ -45,6 +50,10 @@ export default function HomeScreen() {
     // but can keep it for UI states if needed.
     const [usingLocation, setUsingLocation] = useState(false);
     const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+
+    // Station picker state
+    const [nearbyStations, setNearbyStations] = useState<MapStation[]>([]);
+    const [selectedStationUid, setSelectedStationUid] = useState<number | null>(null);
 
     const loadAQIData = useCallback(async (cityToLoad?: string) => {
         try {
@@ -115,15 +124,15 @@ export default function HomeScreen() {
             if (currentCityId === 'GPS_LOCATION') {
                 try {
                     const location = await getCurrentLocation();
-                    const data = await fetchAQIByCoordinates(location.latitude, location.longitude);
+                    const data = await fetchAQIByCoordinates(location.latitude, location.longitude, true);
                     setAqiData(data);
                 } catch {
                     // Fallback
-                    const data = await fetchAQIByCity(DEFAULT_CITY);
+                    const data = await fetchAQIByCity(DEFAULT_CITY, true);
                     setAqiData(data);
                 }
             } else {
-                const data = await fetchAQIByCity(city!);
+                const data = await fetchAQIByCity(city!, true);
                 setAqiData(data);
             }
         } catch (e) {
@@ -134,6 +143,44 @@ export default function HomeScreen() {
     }, [currentCityId, t]);
 
 
+    // Fetch nearby stations when coordinates change
+    useEffect(() => {
+        const fetchNearby = async () => {
+            if (!aqiData?.coordinates) {
+                setNearbyStations([]);
+                return;
+            }
+            const { latitude, longitude } = aqiData.coordinates;
+            const delta = 0.2; // ~20km radius
+            const stations = await fetchStationsInBounds(
+                latitude - delta,
+                longitude - delta,
+                latitude + delta,
+                longitude + delta
+            );
+            // Filter valid AQI and sort by name
+            const valid = stations.filter(s => s.aqi !== '-').sort((a, b) => a.station.name.localeCompare(b.station.name));
+            setNearbyStations(valid);
+        };
+        fetchNearby();
+    }, [aqiData?.coordinates?.latitude, aqiData?.coordinates?.longitude]);
+
+    // Handle station selection from picker
+    const handleStationSelect = async (station: MapStation) => {
+        setSelectedStationUid(station.uid);
+        setIsLoading(true);
+        try {
+            // Fetch by UID using the @uid format
+            const data = await fetchAQIByCity(`@${station.uid}`, true);
+            setAqiData(data);
+            setCurrentCityId(`@${station.uid}`);
+        } catch (err) {
+            console.error('Station select error:', err);
+            setError(t('errors.apiFailed'));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleCityChange = () => {
         router.push('/search');
@@ -226,6 +273,13 @@ export default function HomeScreen() {
                             </BlurView>
                         </Pressable>
 
+                        {/* Station Picker for nearby stations */}
+                        <StationPicker
+                            stations={nearbyStations}
+                            selectedUid={selectedStationUid}
+                            onSelectStation={handleStationSelect}
+                        />
+
                         <AQICard
                             data={aqiData}
                             onAskAI={handleAskAI}
@@ -236,11 +290,34 @@ export default function HomeScreen() {
                         {/* Weather Card */}
                         <WeatherCard data={aqiData.weather} />
 
-                        {/* History Graph */}
-                        <HistoryGraph />
+                        {/* History Graph - Uses WAQI forecast data */}
+                        <HistoryGraph
+                            forecast={aqiData.forecast}
+                            cityName={aqiData.city?.split(',')[0]}
+                        />
 
                         {/* Pollutants Grid (New List Layout) */}
                         <PollutantGrid data={aqiData.pollutants} />
+
+                        {aqiData.forecast?.pm25 && aqiData.forecast.pm25.length > 0 && (
+                            <>
+                                <ForecastCard forecast={aqiData.forecast} />
+                                <ForecastGraph forecast={aqiData.forecast} />
+                            </>
+                        )}
+
+                        {aqiData.coordinates && (
+                            <MapCard
+                                latitude={aqiData.coordinates.latitude}
+                                longitude={aqiData.coordinates.longitude}
+                                aqi={aqiData.aqi}
+                                cityName={aqiData.city}
+                            />
+                        )}
+
+                        <HealthGuide aqi={aqiData.aqi} />
+
+                        <View style={{ height: 40 }} />
                     </>
                 )}
             </ScrollView>
