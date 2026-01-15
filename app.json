@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Vayu - AQI India",
-    "slug": "vayu-aqi-india",
+    "name": "Atmos",
+    "slug": "atmos-aqi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "vayu",
+    "scheme": "atmos",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vayu.aqi"
+      "bundleIdentifier": "com.atmos.aqi"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.vayu.aqi",
+      "package": "com.atmos.aqi",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
@@ -38,7 +38,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Vayu to access your location to show local air quality."
+          "locationAlwaysAndWhenInUsePermission": "Allow Atmos to access your location to show local air quality."
         }
       ]
     ]
