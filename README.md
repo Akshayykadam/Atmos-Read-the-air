@@ -2,7 +2,6 @@
 
 A beautiful, production-ready React Native application for monitoring real-time Air Quality Index (AQI) and Weather conditions. Built with **React Native (Expo)**, **OpenAQ**, **Open-Meteo**, and **Google Gemini AI**.
 
-## 📸 UI
 <p align="center">
   <img src="https://github.com/user-attachments/assets/56a7b9fc-c916-48b1-b8f1-8ff75b6a7f7a" width="15%" />
   <img src="https://github.com/user-attachments/assets/29ce993b-378a-4f99-99dd-67f51cc982bc" width="15%" />
