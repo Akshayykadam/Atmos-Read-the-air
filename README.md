@@ -2,6 +2,15 @@
 
 A beautiful, production-ready React Native application for monitoring real-time Air Quality Index (AQI) and Weather conditions. Built with **React Native (Expo)**, **OpenAQ**, **Open-Meteo**, and **Google Gemini AI**.
 
+## 📸 UI
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/56a7b9fc-c916-48b1-b8f1-8ff75b6a7f7a" width="15%" />
+  <img src="https://github.com/user-attachments/assets/29ce993b-378a-4f99-99dd-67f51cc982bc" width="15%" />
+  <img src="https://github.com/user-attachments/assets/7f2fbe04-dbba-40de-8644-6ae8d10003d4" width="15%" />
+  <img src="https://github.com/user-attachments/assets/5bf0e2d7-218f-4418-b481-fcbec605a6b5" width="15%" />
+  <img src="https://github.com/user-attachments/assets/79e42e65-4589-40ea-a7f0-a5e156000ad7" width="15%" />
+  <img src="https://github.com/user-attachments/assets/b11fe895-0333-43fe-9819-9a2f6549a393" width="15%" />
+</p>
 ## ✨ Features
 
 - **🌍 Real-time AQI Monitoring**: Get accurate Air Quality Index data from thousands of stations worldwide via OpenAQ.
@@ -16,17 +25,6 @@ A beautiful, production-ready React Native application for monitoring real-time 
 - **📊 Data Visualization**: Beautiful, interactive charts for historical AQI trends, temperature, and UV index.
 - **📱 Modern UI/UX**: clean, glassmorphism-inspired design with smooth animations and dark mode support.
 - **🌐 Multi-language Support**: Fully localized interface.
-
-## 📸 Screenshots
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/56a7b9fc-c916-48b1-b8f1-8ff75b6a7f7a" width="15%" />
-  <img src="https://github.com/user-attachments/assets/29ce993b-378a-4f99-99dd-67f51cc982bc" width="15%" />
-  <img src="https://github.com/user-attachments/assets/7f2fbe04-dbba-40de-8644-6ae8d10003d4" width="15%" />
-  <img src="https://github.com/user-attachments/assets/5bf0e2d7-218f-4418-b481-fcbec605a6b5" width="15%" />
-  <img src="https://github.com/user-attachments/assets/79e42e65-4589-40ea-a7f0-a5e156000ad7" width="15%" />
-  <img src="https://github.com/user-attachments/assets/b11fe895-0333-43fe-9819-9a2f6549a393" width="15%" />
-</p>
-
 
 ## 🛠️ Tech Stack
 
