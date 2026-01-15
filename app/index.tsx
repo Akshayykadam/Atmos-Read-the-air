@@ -27,7 +27,9 @@ import { HealthGuide } from '../components/HealthGuide';
 import { ForecastGraph } from '../components/ForecastGraph';
 import { MapCard } from '../components/MapCard';
 import { StationPicker } from '../components/StationPicker';
+import { WeatherDetailed } from '../components/WeatherDetailed';
 import { AQIData, fetchAQIByCity, fetchAQIByCoordinates, fetchStationsInBounds, MapStation } from '../services/aqiApi';
+import { OpenMeteoData, fetchOpenMeteoWeather } from '../services/weatherApi';
 import { getCurrentLocation, LocationError } from '../services/locationService';
 import { getSelectedCity, setSelectedCity } from '../services/cacheService';
 import { DEFAULT_CITY } from '../constants/config';
@@ -54,6 +56,13 @@ export default function HomeScreen() {
     // Station picker state
     const [nearbyStations, setNearbyStations] = useState<MapStation[]>([]);
     const [selectedStationUid, setSelectedStationUid] = useState<number | null>(null);
+
+    // Tab navigation: 'aqi' or 'weather'
+    const [activeTab, setActiveTab] = useState<'aqi' | 'weather'>('aqi');
+
+    // Weather data cache (fetched once per location)
+    const [weatherData, setWeatherData] = useState<OpenMeteoData | null>(null);
+    const [weatherLoading, setWeatherLoading] = useState(false);
 
     const loadAQIData = useCallback(async (cityToLoad?: string) => {
         try {
@@ -165,6 +174,22 @@ export default function HomeScreen() {
         fetchNearby();
     }, [aqiData?.coordinates?.latitude, aqiData?.coordinates?.longitude]);
 
+    // Fetch weather data when coordinates change (cached to avoid re-fetch on tab switch)
+    useEffect(() => {
+        const fetchWeather = async () => {
+            if (!aqiData?.coordinates) {
+                setWeatherData(null);
+                return;
+            }
+            setWeatherLoading(true);
+            const { latitude, longitude } = aqiData.coordinates;
+            const data = await fetchOpenMeteoWeather(latitude, longitude);
+            setWeatherData(data);
+            setWeatherLoading(false);
+        };
+        fetchWeather();
+    }, [aqiData?.coordinates?.latitude, aqiData?.coordinates?.longitude]);
+
     // Handle station selection from picker
     const handleStationSelect = async (station: MapStation) => {
         setSelectedStationUid(station.uid);
@@ -209,25 +234,23 @@ export default function HomeScreen() {
 
             {/* Header */}
             <View style={styles.header}>
-                <View style={{ flex: 1, paddingRight: 16 }}>
+                <View style={{ flex: 1 }}>
                     <Text style={styles.title} numberOfLines={1}>
                         {aqiData?.city?.split(',')[0] || (currentCityId === 'GPS_LOCATION' ? 'Current Location' : currentCityId) || 'India'}
                     </Text>
-                    <Text style={styles.subtitle} numberOfLines={2}>
+                    <Text style={styles.subtitle} numberOfLines={1}>
                         {aqiData?.city || t('dashboard.subtitle')}
                     </Text>
                 </View>
-                <Pressable
-                    style={styles.languageButton}
-                    onPress={() => setShowLanguageSelector(true)}
-                >
-                    <BlurView intensity={20} tint="light" style={styles.langBlur}>
-                        <Ionicons name="globe-outline" size={20} color={GenZTheme.text.primary} style={{ marginRight: 6 }} />
-                        <Text style={styles.languageButtonText}>
-                            {getLanguageDisplayName(i18n.language)}
-                        </Text>
-                    </BlurView>
-                </Pressable>
+                {/* Compact action buttons */}
+                <View style={styles.headerActions}>
+                    <Pressable style={styles.iconButton} onPress={handleCityChange}>
+                        <Ionicons name="location-outline" size={20} color={GenZTheme.text.primary} />
+                    </Pressable>
+                    <Pressable style={styles.iconButton} onPress={() => setShowLanguageSelector(true)}>
+                        <Ionicons name="globe-outline" size={20} color={GenZTheme.text.primary} />
+                    </Pressable>
+                </View>
             </View>
 
             <ScrollView
@@ -260,18 +283,35 @@ export default function HomeScreen() {
                 {/* AQI Card */}
                 {aqiData && (
                     <>
-                        {/* Change City Button (Floating style) */}
-                        <Pressable style={styles.changeCityButton} onPress={handleCityChange}>
-                            <BlurView intensity={30} tint="dark" style={styles.cityBlur}>
-                                <Ionicons name="location-sharp" size={20} color={GenZTheme.colors.primary} style={{ marginRight: 12 }} />
-                                <Text style={styles.changeCityText}>
-                                    {usingLocation
-                                        ? t('dashboard.usingLocation')
-                                        : t('dashboard.changeCity')}
+                        {/* Tab Navigation */}
+                        <View style={styles.tabContainer}>
+                            <Pressable
+                                style={[styles.tabButton, activeTab === 'aqi' && styles.tabButtonActive]}
+                                onPress={() => setActiveTab('aqi')}
+                            >
+                                <Ionicons
+                                    name="pulse"
+                                    size={18}
+                                    color={activeTab === 'aqi' ? GenZTheme.colors.primary : GenZTheme.text.secondary}
+                                />
+                                <Text style={[styles.tabText, activeTab === 'aqi' && styles.tabTextActive]}>
+                                    Air Quality
                                 </Text>
-                                <Ionicons name="chevron-forward" size={20} color={GenZTheme.text.secondary} />
-                            </BlurView>
-                        </Pressable>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.tabButton, activeTab === 'weather' && styles.tabButtonActive]}
+                                onPress={() => setActiveTab('weather')}
+                            >
+                                <Ionicons
+                                    name="partly-sunny"
+                                    size={18}
+                                    color={activeTab === 'weather' ? GenZTheme.colors.primary : GenZTheme.text.secondary}
+                                />
+                                <Text style={[styles.tabText, activeTab === 'weather' && styles.tabTextActive]}>
+                                    Weather
+                                </Text>
+                            </Pressable>
+                        </View>
 
                         {/* Station Picker for nearby stations */}
                         <StationPicker
@@ -280,42 +320,55 @@ export default function HomeScreen() {
                             onSelectStation={handleStationSelect}
                         />
 
-                        <AQICard
-                            data={aqiData}
-                            onAskAI={handleAskAI}
-                            onRefresh={handleRefresh}
-                            isRefreshing={isRefreshing}
-                        />
-
-                        {/* Weather Card */}
-                        <WeatherCard data={aqiData.weather} />
-
-                        {/* History Graph - Uses WAQI forecast data */}
-                        <HistoryGraph
-                            forecast={aqiData.forecast}
-                            cityName={aqiData.city?.split(',')[0]}
-                        />
-
-                        {/* Pollutants Grid (New List Layout) */}
-                        <PollutantGrid data={aqiData.pollutants} />
-
-                        {aqiData.forecast?.pm25 && aqiData.forecast.pm25.length > 0 && (
+                        {/* AQI Tab Content */}
+                        {activeTab === 'aqi' && (
                             <>
-                                <ForecastCard forecast={aqiData.forecast} />
-                                <ForecastGraph forecast={aqiData.forecast} />
+                                <AQICard
+                                    data={aqiData}
+                                    onAskAI={handleAskAI}
+                                    onRefresh={handleRefresh}
+                                    isRefreshing={isRefreshing}
+                                />
+
+                                {/* Pollutants Grid */}
+                                <PollutantGrid data={aqiData.pollutants} />
+
+                                {/* History Graph - Uses WAQI forecast data */}
+                                <HistoryGraph
+                                    forecast={aqiData.forecast}
+                                    cityName={aqiData.city?.split(',')[0]}
+                                />
+
+                                {aqiData.forecast?.pm25 && aqiData.forecast.pm25.length > 0 && (
+                                    <>
+                                        <ForecastCard forecast={aqiData.forecast} />
+                                        <ForecastGraph forecast={aqiData.forecast} />
+                                    </>
+                                )}
+
+                                {aqiData.coordinates && (
+                                    <MapCard
+                                        latitude={aqiData.coordinates.latitude}
+                                        longitude={aqiData.coordinates.longitude}
+                                        aqi={aqiData.aqi}
+                                        cityName={aqiData.city}
+                                    />
+                                )}
+
+                                <HealthGuide aqi={aqiData.aqi} />
                             </>
                         )}
 
-                        {aqiData.coordinates && (
-                            <MapCard
-                                latitude={aqiData.coordinates.latitude}
-                                longitude={aqiData.coordinates.longitude}
-                                aqi={aqiData.aqi}
-                                cityName={aqiData.city}
-                            />
+                        {/* Weather Tab Content */}
+                        {activeTab === 'weather' && (
+                            <>
+                                <WeatherDetailed
+                                    weatherData={weatherData}
+                                    isLoading={weatherLoading}
+                                    cityName={aqiData.city?.split(',')[0]}
+                                />
+                            </>
                         )}
-
-                        <HealthGuide aqi={aqiData.aqi} />
 
                         <View style={{ height: 40 }} />
                     </>
@@ -449,5 +502,47 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         width: '100%',
         height: '100%',
+    },
+    // Header action buttons
+    headerActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    iconButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    // Tab navigation
+    tabContainer: {
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginBottom: 16,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 16,
+        padding: 4,
+    },
+    tabButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    tabButtonActive: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    tabText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: GenZTheme.text.secondary,
+    },
+    tabTextActive: {
+        color: GenZTheme.colors.primary,
     },
 });
