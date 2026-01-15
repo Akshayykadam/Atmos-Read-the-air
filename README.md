@@ -1,6 +1,6 @@
 # 🌿 Atmos- Read the air
 
-A beautiful, production-ready React Native application for monitoring real-time Air Quality Index (AQI) and Weather conditions. Built with **React Native (Expo)**, **OpenAQ**, **Open-Meteo**, and **Google Gemini AI**.
+A beautiful, React Native application for monitoring real-time Air Quality Index (AQI) and Weather conditions. Built with **React Native (Expo)**, **OpenAQ**, **Open-Meteo**, and **Google Gemini AI**.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/56a7b9fc-c916-48b1-b8f1-8ff75b6a7f7a" width="15%" />
