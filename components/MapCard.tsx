@@ -137,12 +137,12 @@ export function MapCard({ latitude, longitude, aqi, cityName }: MapCardProps) {
             const maxLat = latitude + delta;
             const maxLng = longitude + delta;
 
-            console.log(`MapCard: Fetching stations near ${latitude}, ${longitude}`);
+
             let data = await fetchStationsInBounds(minLat, minLng, maxLat, maxLng);
 
             // Fallback: If bounds API returns empty and we have a city name, search for it
             if (data.length === 0 && cityName) {
-                console.log(`MapCard: Bounds empty, searching for "${cityName}"`);
+
                 // Extract city name (e.g., "Pune" from "Shivajinagar, Pune, India")
                 const parts = cityName.split(',');
                 const searchTerm = parts.length > 1 ? parts[1].trim() : parts[0].trim();
@@ -151,7 +151,7 @@ export function MapCard({ latitude, longitude, aqi, cityName }: MapCardProps) {
                 // Convert search results to MapStation format (approximate coordinates)
                 // Since search doesn't give coordinates, we'll just show the popup list
                 // and rely on the StationPicker component for actual switching
-                console.log(`MapCard: Found ${searchResults.length} stations via search`);
+
 
                 // For the map, we'll just show the main marker since search doesn't return coords
                 // The StationPicker will handle the multi-station selection

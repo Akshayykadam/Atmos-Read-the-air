@@ -302,11 +302,11 @@ export async function fetchStationsInBounds(
     try {
         // WAQI API expects: latlng=lat1,lng1,lat2,lng2 (SW corner, NE corner)
         const url = `${AQICN_BASE_URL}/map/bounds/?latlng=${minLat},${minLng},${maxLat},${maxLng}&token=${AQICN_API_TOKEN}`;
-        console.log('Fetching stations from:', url);
+
         const response = await fetch(url);
         const json = await response.json();
 
-        console.log('Stations API response status:', json.status, 'count:', json.data?.length);
+
 
         if (json.status !== 'ok') return [];
 

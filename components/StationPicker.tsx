@@ -80,13 +80,14 @@ const styles = StyleSheet.create({
     container: {
         marginHorizontal: 16,
         marginTop: 16,
+        marginBottom: 16,
         borderRadius: 20,
         overflow: 'hidden',
         borderColor: 'rgba(255,255,255,0.08)',
         borderWidth: 1,
     },
     glass: {
-        padding: 16,
+        paddingVertical: 16,
     },
     title: {
         fontSize: 14,
@@ -94,9 +95,11 @@ const styles = StyleSheet.create({
         color: GenZTheme.text.secondary,
         marginBottom: 12,
         letterSpacing: 0.5,
+        paddingHorizontal: 16,
     },
     scrollContent: {
         gap: 10,
+        paddingHorizontal: 16,
     },
     stationChip: {
         flexDirection: 'row',
@@ -110,6 +113,7 @@ const styles = StyleSheet.create({
     },
     stationChipSelected: {
         backgroundColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.2)',
     },
     aqiBadge: {
         width: 32,
@@ -128,6 +132,6 @@ const styles = StyleSheet.create({
         color: GenZTheme.text.secondary,
         fontSize: 13,
         fontWeight: '500',
-        maxWidth: 100,
+        maxWidth: 150,
     },
 });

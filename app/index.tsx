@@ -236,10 +236,15 @@ export default function HomeScreen() {
             <View style={styles.header}>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.title} numberOfLines={1}>
-                        {aqiData?.city?.split(',')[0] || (currentCityId === 'GPS_LOCATION' ? 'Current Location' : currentCityId) || 'India'}
+                        {nearbyStations.find(s => s.uid === selectedStationUid)?.station.name.split(',')[0] ||
+                            aqiData?.city?.split(',')[0] ||
+                            (currentCityId === 'GPS_LOCATION' ? 'Current Location' : currentCityId) ||
+                            'India'}
                     </Text>
                     <Text style={styles.subtitle} numberOfLines={1}>
-                        {aqiData?.city || t('dashboard.subtitle')}
+                        {nearbyStations.find(s => s.uid === selectedStationUid)?.station.name ||
+                            aqiData?.city ||
+                            t('dashboard.subtitle')}
                     </Text>
                 </View>
                 {/* Compact action buttons */}

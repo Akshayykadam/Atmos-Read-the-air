@@ -158,7 +158,7 @@ export async function fetchOpenMeteoWeather(
             }
         }
 
-        console.log('OpenMeteo: Starting hourly from index', startIndex);
+
 
         // Get next 12 hours from start index
         for (let i = startIndex; i < startIndex + 12 && i < data.hourly.time.length; i++) {
@@ -174,7 +174,7 @@ export async function fetchOpenMeteoWeather(
             });
         }
 
-        console.log('OpenMeteo: Got', hourly.length, 'hourly entries');
+
 
         // Parse daily forecast
         const daily: DailyForecast[] = data.daily.time.map((date: string, i: number) => {
