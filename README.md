@@ -1,4 +1,4 @@
-# 🌿 AirQuality - Real-time AQI & Weather Monitor
+# 🌿 Atmos- Read the air
 
 A beautiful, production-ready React Native application for monitoring real-time Air Quality Index (AQI) and Weather conditions. Built with **React Native (Expo)**, **OpenAQ**, **Open-Meteo**, and **Google Gemini AI**.
 
