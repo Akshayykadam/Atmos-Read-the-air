@@ -3,4 +3,4 @@ if (!Array.prototype.toReversed) {
         return this.slice().reverse();
     };
 }
-console.log('Polyfill loaded: Array.prototype.toReversed');
+

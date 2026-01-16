@@ -115,9 +115,11 @@ const DARK_MAP_STYLE = [
 ];
 
 import { fetchStationsInBounds, MapStation, searchStations } from '../services/aqiApi';
+import { Platform } from 'react-native';
 
 export function MapCard({ latitude, longitude, aqi, cityName }: MapCardProps) {
     const [stations, setStations] = React.useState<MapStation[]>([]);
+    const [mapError, setMapError] = React.useState<boolean>(false);
 
     const getAQIColor = (value: number) => {
         if (value <= 50) return GenZTheme.colors.aqi.good;
@@ -173,52 +175,56 @@ export function MapCard({ latitude, longitude, aqi, cityName }: MapCardProps) {
                 </View>
 
                 <View style={styles.mapContainer}>
-                    <MapView
-                        provider={PROVIDER_DEFAULT}
-                        style={styles.map}
-                        customMapStyle={DARK_MAP_STYLE}
-                        initialRegion={{
-                            latitude: latitude,
-                            longitude: longitude,
-                            latitudeDelta: 0.1, // Zoom out slightly to see neighbors
-                            longitudeDelta: 0.1,
-                        }}
-                    >
-                        {stations.map(station => {
-                            const val = parseInt(station.aqi);
-                            if (isNaN(val)) return null;
-                            const color = getAQIColor(val);
+                    {mapError ? (
+                        <View style={styles.mapFallback}>
+                            <Text style={styles.mapFallbackText}>Map unavailable</Text>
+                            <Text style={styles.mapFallbackSubtext}>Configure Google Maps API key</Text>
+                        </View>
+                    ) : (
+                        <MapView
+                            provider={PROVIDER_DEFAULT}
+                            style={styles.map}
+                            customMapStyle={DARK_MAP_STYLE}
+                            initialRegion={{
+                                latitude: latitude,
+                                longitude: longitude,
+                                latitudeDelta: 0.1,
+                                longitudeDelta: 0.1,
+                            }}
+                            onMapReady={() => setMapError(false)}
+                        >
+                            {stations.map(station => {
+                                const val = parseInt(station.aqi);
+                                if (isNaN(val)) return null;
+                                const color = getAQIColor(val);
 
-                            // Highlight the current station if UID matches or coordinates are very close
-                            // For simplicity, we just render all fetched stations.
-                            // The one passed in props might be one of them.
+                                return (
+                                    <Marker
+                                        key={station.uid}
+                                        coordinate={{ latitude: station.lat, longitude: station.lon }}
+                                        title={station.station.name}
+                                        description={`AQI: ${val}`}
+                                    >
+                                        <View style={[styles.marker, { backgroundColor: color }]}>
+                                            <Text style={styles.markerText}>{val}</Text>
+                                        </View>
+                                    </Marker>
+                                );
+                            })}
 
-                            return (
+                            {/* Fallback: If bounds API fails or returns nothing, ensure at least the main station is shown */}
+                            {stations.length === 0 && (
                                 <Marker
-                                    key={station.uid}
-                                    coordinate={{ latitude: station.lat, longitude: station.lon }}
-                                    title={station.station.name}
-                                    description={`AQI: ${val}`}
+                                    coordinate={{ latitude, longitude }}
+                                    title={`AQI: ${aqi}`}
                                 >
-                                    <View style={[styles.marker, { backgroundColor: color }]}>
-                                        <Text style={styles.markerText}>{val}</Text>
+                                    <View style={[styles.marker, { backgroundColor: getAQIColor(aqi) }]}>
+                                        <Text style={styles.markerText}>{aqi}</Text>
                                     </View>
                                 </Marker>
-                            );
-                        })}
-
-                        {/* Fallback: If bounds API fails or returns nothing, ensure at least the main station is shown */}
-                        {stations.length === 0 && (
-                            <Marker
-                                coordinate={{ latitude, longitude }}
-                                title={`AQI: ${aqi}`}
-                            >
-                                <View style={[styles.marker, { backgroundColor: getAQIColor(aqi) }]}>
-                                    <Text style={styles.markerText}>{aqi}</Text>
-                                </View>
-                            </Marker>
-                        )}
-                    </MapView>
+                            )}
+                        </MapView>
+                    )}
                 </View>
             </BlurView>
         </View>
@@ -276,5 +282,21 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 12,
+    },
+    mapFallback: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(30, 30, 30, 0.9)',
+    },
+    mapFallbackText: {
+        color: GenZTheme.text.primary,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    mapFallbackSubtext: {
+        color: GenZTheme.text.secondary,
+        fontSize: 12,
+        marginTop: 4,
     },
 });

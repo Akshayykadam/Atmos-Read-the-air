@@ -25,7 +25,7 @@ import { PollutantGrid } from '../components/PollutantGrid';
 import { ForecastCard } from '../components/ForecastCard';
 import { HealthGuide } from '../components/HealthGuide';
 import { ForecastGraph } from '../components/ForecastGraph';
-import { MapCard } from '../components/MapCard';
+import { OSMMapCard } from '../components/OSMMapCard';
 import { StationPicker } from '../components/StationPicker';
 import { WeatherDetailed } from '../components/WeatherDetailed';
 import { AQIData, fetchAQIByCity, fetchAQIByCoordinates, fetchStationsInBounds, MapStation } from '../services/aqiApi';
@@ -56,6 +56,9 @@ export default function HomeScreen() {
     // Station picker state
     const [nearbyStations, setNearbyStations] = useState<MapStation[]>([]);
     const [selectedStationUid, setSelectedStationUid] = useState<number | null>(null);
+
+    // Flag to prevent double-fetching on manual station select
+    const isManualSelection = React.useRef(false);
 
     // Tab navigation: 'aqi' or 'weather'
     const [activeTab, setActiveTab] = useState<'aqi' | 'weather'>('aqi');
@@ -94,6 +97,12 @@ export default function HomeScreen() {
     useFocusEffect(
         useCallback(() => {
             const checkAndLoad = async () => {
+                // If manual selection just happened, skip this auto-reload
+                if (isManualSelection.current) {
+                    isManualSelection.current = false;
+                    return;
+                }
+
                 const savedCity = await getSelectedCity();
                 const effectiveCityId = savedCity || DEFAULT_CITY;
 
@@ -192,11 +201,20 @@ export default function HomeScreen() {
 
     // Handle station selection from picker
     const handleStationSelect = async (station: MapStation) => {
+        isManualSelection.current = true;
         setSelectedStationUid(station.uid);
         setIsLoading(true);
         try {
             // Fetch by UID using the @uid format
             const data = await fetchAQIByCity(`@${station.uid}`, true);
+
+            // Override AQI with the value from the map station (which the user clicked)
+            // This fixes discrepancy where Feed API returns different value than Map API
+            const stationAqi = parseInt(station.aqi);
+            if (!isNaN(stationAqi)) {
+                data.aqi = stationAqi;
+            }
+
             setAqiData(data);
             setCurrentCityId(`@${station.uid}`);
         } catch (err) {
@@ -352,7 +370,7 @@ export default function HomeScreen() {
                                 )}
 
                                 {aqiData.coordinates && (
-                                    <MapCard
+                                    <OSMMapCard
                                         latitude={aqiData.coordinates.latitude}
                                         longitude={aqiData.coordinates.longitude}
                                         aqi={aqiData.aqi}
