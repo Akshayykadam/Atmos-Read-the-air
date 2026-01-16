@@ -104,10 +104,9 @@ export default function HomeScreen() {
                 }
 
                 const savedCity = await getSelectedCity();
-                const effectiveCityId = savedCity || DEFAULT_CITY;
 
                 // If we have data and the city hasn't changed, do nothing
-                if (aqiData && effectiveCityId === currentCityId) {
+                if (aqiData && savedCity === currentCityId) {
                     return;
                 }
 
@@ -115,7 +114,23 @@ export default function HomeScreen() {
                 setIsLoading(true);
 
                 try {
-                    // Load the effective city
+                    // If no saved city, try to use GPS location first
+                    if (!savedCity) {
+                        try {
+                            const location = await getCurrentLocation();
+                            const data = await fetchAQIByCoordinates(location.latitude, location.longitude);
+                            setAqiData(data);
+                            setCurrentCityId('GPS_LOCATION');
+                            setUsingLocation(true);
+                            return;
+                        } catch {
+                            // Location failed, fall through to default city
+                            console.log('Location unavailable, using default city');
+                        }
+                    }
+
+                    // Use saved city or default
+                    const effectiveCityId = savedCity || DEFAULT_CITY;
                     const data = await fetchAQIByCity(effectiveCityId);
                     setAqiData(data);
                     setCurrentCityId(effectiveCityId);

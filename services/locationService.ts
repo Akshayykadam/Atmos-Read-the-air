@@ -28,19 +28,43 @@ export async function checkLocationPermission(): Promise<boolean> {
     }
 }
 
+// Helper to add timeout to any promise
+function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> {
+    const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(errorMessage)), ms)
+    );
+    return Promise.race([promise, timeout]);
+}
+
 export async function getCurrentLocation(): Promise<LocationData> {
     try {
-        const hasPermission = await checkLocationPermission();
+        // Check permission with 3s timeout
+        const hasPermission = await withTimeout(
+            checkLocationPermission(),
+            3000,
+            'Permission check timeout'
+        );
+
         if (!hasPermission) {
-            const granted = await requestLocationPermission();
+            // Request permission with 5s timeout
+            const granted = await withTimeout(
+                requestLocationPermission(),
+                5000,
+                'Permission request timeout'
+            );
             if (!granted) {
                 throw { type: 'permission', message: 'Location permission denied' } as LocationError;
             }
         }
 
-        const location = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-        });
+        // Get location with 10s timeout
+        const location = await withTimeout(
+            Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+            }),
+            10000,
+            'Location request timeout'
+        );
 
         return {
             latitude: location.coords.latitude,

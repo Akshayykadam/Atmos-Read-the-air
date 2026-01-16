@@ -129,7 +129,7 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                 <View style={styles.timestampRow}>
                     <Ionicons name="time-outline" size={14} color={GenZTheme.text.secondary} />
                     <Text style={styles.timestampText}>
-                        Station data from: {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Station data from: {new Date(data.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                         {data.isCached && ' (cached)'}
                     </Text>
                 </View>
