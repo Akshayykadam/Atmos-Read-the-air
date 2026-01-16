@@ -46,10 +46,10 @@ export async function getCurrentLocation(): Promise<LocationData> {
         );
 
         if (!hasPermission) {
-            // Request permission with 5s timeout
+            // Request permission with 60s timeout (user interaction required)
             const granted = await withTimeout(
                 requestLocationPermission(),
-                5000,
+                60000,
                 'Permission request timeout'
             );
             if (!granted) {
@@ -57,12 +57,12 @@ export async function getCurrentLocation(): Promise<LocationData> {
             }
         }
 
-        // Get location with 10s timeout
+        // Get location with 15s timeout
         const location = await withTimeout(
             Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Balanced,
             }),
-            10000,
+            15000,
             'Location request timeout'
         );
 
@@ -92,6 +92,21 @@ export async function getLocationWithFallback(): Promise<LocationData | null> {
     try {
         return await getCurrentLocation();
     } catch {
+        return null;
+    }
+}
+
+export async function getCityName(latitude: number, longitude: number): Promise<string | null> {
+    try {
+        const result = await Location.reverseGeocodeAsync({ latitude, longitude });
+        if (result && result.length > 0) {
+            const place = result[0];
+            // Prioritize city name, then district, then region, then subregion
+            return place.city || place.isoCountryCode || place.region || place.subregion || null;
+        }
+        return null;
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
         return null;
     }
 }

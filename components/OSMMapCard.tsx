@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { fetchStationsInBounds, MapStation } from '../services/aqiApi';
 
@@ -13,6 +14,7 @@ interface OSMMapCardProps {
 }
 
 export function OSMMapCard({ latitude, longitude, aqi, cityName }: OSMMapCardProps) {
+    const { t } = useTranslation();
     const [stations, setStations] = React.useState<MapStation[]>([]);
 
     const getAQIColor = (value: number) => {
@@ -55,7 +57,7 @@ export function OSMMapCard({ latitude, longitude, aqi, cityName }: OSMMapCardPro
                 lat: latitude,
                 lon: longitude,
                 aqi: aqi,
-                name: 'Current Location',
+                name: t('dashboard.currentLocation'),
                 color: getAQIColor(aqi),
             }]
     );
@@ -135,7 +137,7 @@ export function OSMMapCard({ latitude, longitude, aqi, cityName }: OSMMapCardPro
         <View style={styles.container}>
             <BlurView intensity={20} tint="dark" style={styles.glass}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Nearby Stations</Text>
+                    <Text style={styles.title}>{t('dashboard.nearbyStations')}</Text>
                 </View>
 
                 <View style={styles.mapContainer}>

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { AQIData } from '../services/aqiApi';
 
@@ -17,12 +18,12 @@ const { width } = Dimensions.get('window');
 
 // Helper to get helper text/color based on AQI
 const getAQIStatus = (aqi: number) => {
-    if (aqi <= 50) return { label: 'Good', color: GenZTheme.colors.aqi.good };
-    if (aqi <= 100) return { label: 'Moderate', color: GenZTheme.colors.aqi.moderate };
-    if (aqi <= 150) return { label: 'Poor', color: GenZTheme.colors.aqi.poor };
-    if (aqi <= 200) return { label: 'Unhealthy', color: GenZTheme.colors.aqi.unhealthy };
-    if (aqi <= 300) return { label: 'Severe', color: GenZTheme.colors.aqi.severe };
-    return { label: 'Hazardous', color: GenZTheme.colors.aqi.hazardous };
+    if (aqi <= 50) return { label: 'categories.good', color: GenZTheme.colors.aqi.good };
+    if (aqi <= 100) return { label: 'categories.moderate', color: GenZTheme.colors.aqi.moderate };
+    if (aqi <= 150) return { label: 'categories.poor', color: GenZTheme.colors.aqi.poor };
+    if (aqi <= 200) return { label: 'categories.unhealthy', color: GenZTheme.colors.aqi.unhealthy };
+    if (aqi <= 300) return { label: 'categories.severe', color: GenZTheme.colors.aqi.severe };
+    return { label: 'categories.hazardous', color: GenZTheme.colors.aqi.hazardous };
 };
 
 const getAQIGradient = (aqi: number) => {
@@ -34,6 +35,7 @@ const getAQIGradient = (aqi: number) => {
 }
 
 export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps) {
+    const { t } = useTranslation();
     const status = getAQIStatus(data.aqi);
     const bgGradient = getAQIGradient(data.aqi);
 
@@ -57,17 +59,17 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                     <View>
                         <View style={styles.liveIndicator}>
                             <View style={styles.liveDot} />
-                            <Text style={styles.liveText}>Live AQI</Text>
+                            <Text style={styles.liveText}>{t('dashboard.liveAQI')}</Text>
                         </View>
                         <Text style={styles.aqiValue}>{data.aqi}</Text>
-                        <Text style={styles.aqiUnit}>AQI (India)</Text>
+                        <Text style={styles.aqiUnit}>{t('dashboard.aqiIndia')}</Text>
                     </View>
 
                     <View style={styles.statusSection}>
-                        <Text style={styles.statusLabel}>Air Quality is</Text>
+                        <Text style={styles.statusLabel}>{t('dashboard.airQualityIs')}</Text>
                         <View style={[styles.statusBadge, { backgroundColor: status.color + '40' }]}>
                             <Text style={[styles.statusText, { color: status.color }]}>
-                                {status.label}
+                                {t(status.label)}
                             </Text>
                         </View>
                     </View>
@@ -86,12 +88,12 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                 {/* Scale Bar */}
                 <View style={styles.scaleContainer}>
                     <View style={styles.scaleLabels}>
-                        <Text style={styles.scaleLabel}>Good</Text>
-                        <Text style={styles.scaleLabel}>OK</Text>
-                        <Text style={styles.scaleLabel}>Poor</Text>
-                        <Text style={styles.scaleLabel}>Bad</Text>
-                        <Text style={styles.scaleLabel}>Severe</Text>
-                        <Text style={styles.scaleLabel}>Hazard</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.good')}</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.moderate')}</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.poor')}</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.unhealthy')}</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.severe')}</Text>
+                        <Text style={styles.scaleLabel}>{t('categories.hazardous')}</Text>
                     </View>
 
                     <View style={styles.scaleBar}>
@@ -129,8 +131,18 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                 <View style={styles.timestampRow}>
                     <Ionicons name="time-outline" size={14} color={GenZTheme.text.secondary} />
                     <Text style={styles.timestampText}>
-                        Station data from: {new Date(data.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                        {data.isCached && ' (cached)'}
+                        {t('dashboard.updated')}: {(() => {
+                            // Extract time from ISO string directly (e.g., "2026-01-16T11:00:00+05:30" -> "11:00 AM")
+                            const match = data.time.match(/T(\d{2}):(\d{2})/);
+                            if (match) {
+                                const hour = parseInt(match[1]);
+                                const minute = match[2];
+                                const ampm = hour >= 12 ? 'PM' : 'AM';
+                                const hour12 = hour % 12 || 12;
+                                return `${hour12}:${minute} ${ampm}`;
+                            }
+                            return data.time;
+                        })()}
                     </Text>
                 </View>
 

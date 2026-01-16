@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import {
     OpenMeteoData,
@@ -39,12 +40,13 @@ const getWeatherGradient = (code: number, isDay: boolean): string[] => {
 };
 
 export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDetailedProps) {
+    const { t } = useTranslation();
 
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={GenZTheme.colors.primary} />
-                <Text style={styles.loadingText}>Loading weather...</Text>
+                <Text style={styles.loadingText}>{t('common.loading')}</Text>
             </View>
         );
     }
@@ -53,7 +55,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
         return (
             <View style={styles.loadingContainer}>
                 <Ionicons name="cloud-offline" size={48} color={GenZTheme.text.secondary} />
-                <Text style={styles.loadingText}>No weather data</Text>
+                <Text style={styles.loadingText}>{t('common.error')}</Text>
             </View>
         );
     }
@@ -77,7 +79,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                     <View style={styles.heroHeader}>
                         <View style={styles.liveIndicator}>
                             <View style={[styles.liveDot, { backgroundColor: gradient[0] }]} />
-                            <Text style={styles.liveText}>Live Weather</Text>
+                            <Text style={styles.liveText}>{t('weather.liveWeather')}</Text>
                         </View>
                     </View>
 
@@ -85,7 +87,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                     <View style={styles.tempRow}>
                         <View>
                             <Text style={styles.heroTemp}>{Math.round(current.temperature)}°</Text>
-                            <Text style={styles.feelsLike}>Feels like {Math.round(current.feelsLike)}°</Text>
+                            <Text style={styles.feelsLike}>{t('weather.feelsLike')} {Math.round(current.feelsLike)}°</Text>
                         </View>
                         <View style={styles.iconContainer}>
                             <Ionicons
@@ -108,25 +110,25 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                         <View style={styles.statItem}>
                             <Ionicons name="water" size={22} color="#4BA9FF" />
                             <Text style={styles.statValue}>{current.humidity}%</Text>
-                            <Text style={styles.statLabel}>Humidity</Text>
+                            <Text style={styles.statLabel}>{t('weather.humidity')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Ionicons name="navigate" size={22} color="#A8DADC" />
-                            <Text style={styles.statValue}>{Math.round(current.windSpeed)} km/h</Text>
-                            <Text style={styles.statLabel}>Wind</Text>
+                            <Text style={styles.statValue}>{Math.round(current.windSpeed)} {t('weather.kmh')}</Text>
+                            <Text style={styles.statLabel}>{t('weather.wind')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Ionicons name="sunny" size={22} color="#FFD93D" />
                             <Text style={styles.statValue}>{Math.round(current.uvIndex)}</Text>
-                            <Text style={styles.statLabel}>UV Index</Text>
+                            <Text style={styles.statLabel}>{t('weather.uvIndex')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Ionicons name="eye" size={22} color="#E9ECEF" />
-                            <Text style={styles.statValue}>{current.visibility.toFixed(0)} km</Text>
-                            <Text style={styles.statLabel}>Visibility</Text>
+                            <Text style={styles.statValue}>{current.visibility.toFixed(0)} {t('weather.km')}</Text>
+                            <Text style={styles.statLabel}>{t('weather.visibility')}</Text>
                         </View>
                     </View>
                 </BlurView>
@@ -145,7 +147,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                     <Ionicons name="sunny" size={24} color="#fff" />
                                 </LinearGradient>
                                 <View>
-                                    <Text style={styles.sunTimeLabel}>Sunrise</Text>
+                                    <Text style={styles.sunTimeLabel}>{t('weather.sunrise')}</Text>
                                     <Text style={styles.sunTimeValue}>{daily[0].sunrise}</Text>
                                 </View>
                             </View>
@@ -158,7 +160,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                     <Ionicons name="moon" size={24} color="#fff" />
                                 </LinearGradient>
                                 <View>
-                                    <Text style={styles.sunTimeLabel}>Sunset</Text>
+                                    <Text style={styles.sunTimeLabel}>{t('weather.sunset')}</Text>
                                     <Text style={styles.sunTimeValue}>{daily[0].sunset}</Text>
                                 </View>
                             </View>
@@ -173,7 +175,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                     <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="time-outline" size={18} color={GenZTheme.colors.primary} />
-                            <Text style={styles.sectionTitle}>Hourly Forecast</Text>
+                            <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
                         </View>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                             <View style={styles.hourlyContainer}>
@@ -189,7 +191,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                             ]}
                                         >
                                             <Text style={[styles.hourlyTime, isNow && styles.hourlyTimeActive]}>
-                                                {isNow ? 'Now' : hour.hour}
+                                                {isNow ? t('weather.now') : hour.hour}
                                             </Text>
                                             <Ionicons
                                                 name={info.icon as any}
@@ -220,14 +222,14 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                     <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="thermometer-outline" size={18} color="#FF6B6B" />
-                            <Text style={styles.sectionTitle}>7-Day Temperature</Text>
+                            <Text style={styles.sectionTitle}>{t('weather.sevenDayTemp')}</Text>
                         </View>
 
                         {/* Min/Max Summary */}
                         <View style={styles.tempSummary}>
                             <View style={styles.tempSummaryItem}>
                                 <Ionicons name="arrow-up" size={16} color="#FF6B6B" />
-                                <Text style={styles.tempSummaryLabel}>Highest</Text>
+                                <Text style={styles.tempSummaryLabel}>{t('weather.highest')}</Text>
                                 <Text style={styles.tempSummaryValue}>
                                     {Math.max(...daily.map(d => d.tempMax))}°
                                 </Text>
@@ -235,7 +237,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                             <View style={styles.tempSummaryDivider} />
                             <View style={styles.tempSummaryItem}>
                                 <Ionicons name="arrow-down" size={16} color="#4BA9FF" />
-                                <Text style={styles.tempSummaryLabel}>Lowest</Text>
+                                <Text style={styles.tempSummaryLabel}>{t('weather.lowest')}</Text>
                                 <Text style={styles.tempSummaryValue}>
                                     {Math.min(...daily.map(d => d.tempMin))}°
                                 </Text>
@@ -307,10 +309,10 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                                 }}
                                             >
                                                 <Text style={{ color: '#FF6B6B', fontSize: 12, fontWeight: 'bold' }}>
-                                                    High: {high}°
+                                                    {t('weather.high')}: {high}°
                                                 </Text>
                                                 <Text style={{ color: '#4BA9FF', fontSize: 12, fontWeight: 'bold', marginTop: 4 }}>
-                                                    Low: {low}°
+                                                    {t('weather.low')}: {low}°
                                                 </Text>
                                             </View>
                                         );
@@ -328,7 +330,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                     <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="sunny" size={18} color="#FFCC00" />
-                            <Text style={styles.sectionTitle}>7-Day UV Index</Text>
+                            <Text style={styles.sectionTitle}>{t('weather.sevenDayUv')}</Text>
                         </View>
                         <View style={[styles.graphContainer, { marginTop: 10 }]}>
                             <LineChart
@@ -375,11 +377,11 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                     pointerLabelComponent: (items: any) => {
                                         const uv = items[0]?.value;
                                         let color = '#4CD964';
-                                        let level = 'Low';
-                                        if (uv >= 3) { color = '#FFCC00'; level = 'Moderate'; }
-                                        if (uv >= 6) { color = '#FF9500'; level = 'High'; }
-                                        if (uv >= 8) { color = '#FF3B30'; level = 'Very High'; }
-                                        if (uv >= 11) { color = '#AF52DE'; level = 'Extreme'; }
+                                        let level = t('weather.low');
+                                        if (uv >= 3) { color = '#FFCC00'; level = t('weather.moderate'); }
+                                        if (uv >= 6) { color = '#FF9500'; level = t('weather.high'); }
+                                        if (uv >= 8) { color = '#FF3B30'; level = t('weather.veryHigh'); }
+                                        if (uv >= 11) { color = '#AF52DE'; level = t('weather.extreme'); }
 
                                         return (
                                             <View
@@ -395,7 +397,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                                                 }}
                                             >
                                                 <Text style={{ color: color, fontSize: 14, fontWeight: 'bold' }}>
-                                                    UV: {uv?.toFixed(1)}
+                                                    {t('weather.uv')}: {uv?.toFixed(1)}
                                                 </Text>
                                                 <Text style={{ color: '#fff', fontSize: 12, marginTop: 4 }}>
                                                     {level}
@@ -415,7 +417,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                 <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="calendar-outline" size={18} color={GenZTheme.colors.primary} />
-                        <Text style={styles.sectionTitle}>7-Day Forecast</Text>
+                        <Text style={styles.sectionTitle}>{t('weather.sevenDayForecast')}</Text>
                     </View>
                     {daily.map((day, index) => {
                         const info = getWeatherInfo(day.weatherCode, true);
@@ -423,7 +425,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                         return (
                             <View key={index} style={[styles.dailyRow, isToday && styles.dailyRowToday]}>
                                 <Text style={[styles.dailyDay, isToday && styles.dailyDayToday]}>
-                                    {isToday ? 'Today' : day.dayName}
+                                    {isToday ? t('weather.today') : day.dayName}
                                 </Text>
                                 <View style={styles.dailyWeather}>
                                     <Ionicons name={info.icon as any} size={24} color={GenZTheme.text.primary} />

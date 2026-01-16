@@ -14,24 +14,40 @@
         "hour": "hour",
         "hours": "hours",
         "offline": "Offline",
-        "cached": "Cached data"
+        "cached": "Cached data",
+        "today": "Today"
     },
     "dashboard": {
         "title": "Air Quality",
         "subtitle": "Real-time AQI for India",
         "currentAqi": "Current AQI",
         "dominantPollutant": "Dominant Pollutant",
+        "majorPollutants": "Major Air Pollutants",
         "askAi": "Ask AI for health tips",
         "changeCity": "Change City",
         "usingLocation": "Using your location",
-        "refresh": "Refresh"
+        "refresh": "Refresh",
+        "liveAQI": "Live AQI",
+        "aqiIndia": "AQI (India)",
+        "airQualityIs": "Air Quality is",
+        "updated": "Updated",
+        "recentTrend": "Recent AQI Trend",
+        "noTrendData": "No trend data available",
+        "best": "Best",
+        "worst": "Worst",
+        "pollutionTrend": "Pollution Trend",
+        "nearbyStations": "Nearby Stations",
+        "detectingLocation": "Detecting Location...",
+        "currentLocation": "Current Location",
+        "sevenDayTrend": "7-Day Trend",
+        "waqiData": "WAQI Data"
     },
     "categories": {
         "good": "Good",
         "moderate": "Moderate",
-        "unhealthySensitive": "Unhealthy for Sensitive Groups",
+        "poor": "Poor",
         "unhealthy": "Unhealthy",
-        "veryUnhealthy": "Very Unhealthy",
+        "severe": "Severe",
         "hazardous": "Hazardous"
     },
     "health": {
@@ -87,5 +103,51 @@
         "mr": "मराठी",
         "ta": "தமிழ்",
         "te": "తెలుగు"
+    },
+    "healthGuide": {
+        "title": "Health Guide",
+        "good": {
+            "outdoor": "Great for Outdoor Activities",
+            "ventilate": "Ventilate your home"
+        },
+        "moderate": {
+            "outdoor": "Sensitive groups should reduce outdoor exercise",
+            "windows": "Close windows if sensitive"
+        },
+        "poor": {
+            "outdoor": "Reduce prolonged outdoor exertion",
+            "mask": "Sensitive groups: wear a mask"
+        },
+        "severe": {
+            "outdoor": "Avoid all outdoor activities",
+            "purifier": "Run Air Purifier",
+            "mask": "Wear N95 Mask outdoors"
+        }
+    },
+    "weather": {
+        "liveWeather": "Live Weather",
+        "feelsLike": "Feels like",
+        "humidity": "Humidity",
+        "wind": "Wind",
+        "uvIndex": "UV Index",
+        "visibility": "Visibility",
+        "sunrise": "Sunrise",
+        "sunset": "Sunset",
+        "hourlyForecast": "Hourly Forecast",
+        "sevenDayTemp": "7-Day Temperature",
+        "sevenDayUv": "7-Day UV Index",
+        "sevenDayForecast": "7-Day Forecast",
+        "now": "Now",
+        "today": "Today",
+        "highest": "Highest",
+        "lowest": "Lowest",
+        "high": "High",
+        "low": "Low",
+        "moderate": "Moderate",
+        "veryHigh": "Very High",
+        "extreme": "Extreme",
+        "uv": "UV",
+        "kmh": "km/h",
+        "km": "km"
     }
 }

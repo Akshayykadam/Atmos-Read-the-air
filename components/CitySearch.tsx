@@ -60,7 +60,9 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
             const found: City[] = stations.map(s => ({
                 name: s.name,
                 state: s.state,
-                aqicnId: s.aqicnId
+                aqicnId: s.aqicnId,
+                lat: s.lat,
+                lng: s.lon,
             }));
             setResults(found);
         } catch (e) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { DailyForecast } from '../services/aqiApi';
 
@@ -13,6 +14,8 @@ interface HistoryGraphProps {
 const { width } = Dimensions.get('window');
 
 export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
+    const { t } = useTranslation();
+
     // Use PM2.5 forecast data as our "recent trend"
     const pm25Data = forecast?.pm25 || [];
 
@@ -21,11 +24,11 @@ export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
             <View style={styles.container}>
                 <BlurView intensity={20} tint="dark" style={styles.glass}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>Recent AQI Trend</Text>
+                        <Text style={styles.title}>{t('dashboard.recentTrend')}</Text>
                         <Text style={styles.subtitle}>{cityName || 'PM2.5'}</Text>
                     </View>
                     <View style={styles.noDataContainer}>
-                        <Text style={styles.noDataText}>No trend data available</Text>
+                        <Text style={styles.noDataText}>{t('dashboard.noTrendData')}</Text>
                     </View>
                 </BlurView>
             </View>
@@ -63,7 +66,7 @@ export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
             <BlurView intensity={20} tint="dark" style={styles.glass}>
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.title}>Recent AQI Trend</Text>
+                        <Text style={styles.title}>{t('dashboard.recentTrend')}</Text>
                         <Text style={styles.subtitle}>{cityName || 'PM2.5 Data'}</Text>
                     </View>
                 </View>
@@ -76,7 +79,7 @@ export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
                                 <Text style={styles.statValue}>{Math.round(minValue)}</Text>
                             </View>
                             <View style={styles.statInfo}>
-                                <Text style={styles.statLabel}>Best</Text>
+                                <Text style={styles.statLabel}>{t('dashboard.best')}</Text>
                                 <Text style={styles.statTime}>{minItem.label}</Text>
                             </View>
                         </View>
@@ -88,7 +91,7 @@ export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
                                 <Text style={styles.statValue}>{Math.round(maxValue)}</Text>
                             </View>
                             <View style={styles.statInfo}>
-                                <Text style={styles.statLabel}>Worst</Text>
+                                <Text style={styles.statLabel}>{t('dashboard.worst')}</Text>
                                 <Text style={styles.statTime}>{maxItem.label}</Text>
                             </View>
                         </View>
@@ -157,7 +160,7 @@ export function HistoryGraph({ forecast, cityName }: HistoryGraphProps) {
                 </View>
 
                 <Text style={styles.footerNote}>
-                    7-Day Trend • <Text style={{ color: GenZTheme.colors.primary }}>WAQI Data</Text>
+                    {t('dashboard.sevenDayTrend')} • <Text style={{ color: GenZTheme.colors.primary }}>{t('dashboard.waqiData')}</Text>
                 </Text>
             </BlurView>
         </View>

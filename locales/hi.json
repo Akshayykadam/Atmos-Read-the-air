@@ -14,24 +14,41 @@
         "hour": "घंटा",
         "hours": "घंटे",
         "offline": "ऑफ़लाइन",
-        "cached": "कैश्ड डेटा"
+        "cached": "कैश्ड डेटा",
+        "today": "आज"
     },
     "dashboard": {
         "title": "वायु गुणवत्ता",
         "subtitle": "भारत के लिए रीयल-टाइम AQI",
         "currentAqi": "वर्तमान AQI",
         "dominantPollutant": "प्रमुख प्रदूषक",
+        "majorPollutants": "प्रमुख वायु प्रदूषक",
         "askAi": "स्वास्थ्य सुझाव के लिए AI से पूछें",
         "changeCity": "शहर बदलें",
         "usingLocation": "आपके स्थान का उपयोग",
-        "refresh": "रीफ्रेश करें"
+        "refresh": "रीफ्रेश करें",
+        "liveAQI": "लाइव AQI",
+        "aqiIndia": "AQI (भारत)",
+        "airQualityIs": "वायु गुणवत्ता है",
+        "updated": "अपडेट किया गया",
+        "recentTrend": "हालिया AQI रुझान",
+        "noTrendData": "कोई ट्रेंड डेटा उपलब्ध नहीं",
+        "best": "सबसे अच्छा",
+        "worst": "सबसे खराब",
+        "forecast": "5-दिवसीय पूर्वानुमान",
+        "pollutionTrend": "प्रदूषण रुझान",
+        "nearbyStations": "निकटवर्ती स्टेशन",
+        "detectingLocation": "स्थान का पता लगाया जा रहा है...",
+        "currentLocation": "वर्तमान स्थान",
+        "sevenDayTrend": "7-दिवसीय रुझान",
+        "waqiData": "WAQI डेटा"
     },
     "categories": {
         "good": "अच्छा",
         "moderate": "मध्यम",
-        "unhealthySensitive": "संवेदनशील समूहों के लिए अस्वस्थ",
+        "poor": "खराब",
         "unhealthy": "अस्वस्थ",
-        "veryUnhealthy": "बहुत अस्वस्थ",
+        "severe": "गंभीर",
         "hazardous": "खतरनाक"
     },
     "health": {
@@ -87,5 +104,51 @@
         "mr": "मराठी",
         "ta": "தமிழ்",
         "te": "తెలుగు"
+    },
+    "healthGuide": {
+        "title": "स्वास्थ्य गाइड",
+        "good": {
+            "outdoor": "बाहरी गतिविधियों के लिए बहुत अच्छा",
+            "ventilate": "अपने घर को हवादार रखें"
+        },
+        "moderate": {
+            "outdoor": "संवेदनशील समूहों को बाहरी व्यायाम कम करना चाहिए",
+            "windows": "यदि संवेदनशील हैं तो खिड़कियां बंद रखें"
+        },
+        "poor": {
+            "outdoor": "लंबे समय तक बाहरी परिश्रम कम करें",
+            "mask": "संवेदनशील समूह: मास्क पहनें"
+        },
+        "severe": {
+            "outdoor": "सभी बाहरी गतिविधियों से बचें",
+            "purifier": "एयर प्यूरीफायर चलाएं",
+            "mask": "बाहर N95 मास्क पहनें"
+        }
+    },
+    "weather": {
+        "liveWeather": "लाइव मौसम",
+        "feelsLike": "महसूस हो रहा है",
+        "humidity": "नमी",
+        "wind": "हवा",
+        "uvIndex": "UV सूचकांक",
+        "visibility": "दृश्यता",
+        "sunrise": "सूर्योदय",
+        "sunset": "सूर्यास्त",
+        "hourlyForecast": "प्रति घंटा पूर्वानुमान",
+        "sevenDayTemp": "7-दिवसीय तापमान",
+        "sevenDayUv": "7-दिवसीय UV सूचकांक",
+        "sevenDayForecast": "7-दिवसीय पूर्वानुमान",
+        "now": "अभी",
+        "today": "आज",
+        "highest": "अधिकतम",
+        "lowest": "न्यूनतम",
+        "high": "उच्च",
+        "low": "कम",
+        "moderate": "मध्यम",
+        "veryHigh": "बहुत उच्च",
+        "extreme": "अत्यधिक",
+        "uv": "UV",
+        "kmh": "किमी/घंटा",
+        "km": "किमी"
     }
 }

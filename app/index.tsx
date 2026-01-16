@@ -220,18 +220,14 @@ export default function HomeScreen() {
         setSelectedStationUid(station.uid);
         setIsLoading(true);
         try {
-            // Fetch by UID using the @uid format
-            const data = await fetchAQIByCity(`@${station.uid}`, true);
+            // Use coordinates for fresh Open-Meteo data instead of AQICN station UID
+            const data = await fetchAQIByCoordinates(station.lat, station.lon, true);
 
-            // Override AQI with the value from the map station (which the user clicked)
-            // This fixes discrepancy where Feed API returns different value than Map API
-            const stationAqi = parseInt(station.aqi);
-            if (!isNaN(stationAqi)) {
-                data.aqi = stationAqi;
-            }
+            // Override city name with the selected station name
+            data.city = station.station.name;
 
             setAqiData(data);
-            setCurrentCityId(`@${station.uid}`);
+            setCurrentCityId(`coords_${station.lat}_${station.lon}`);
         } catch (err) {
             console.error('Station select error:', err);
             setError(t('errors.apiFailed'));
@@ -270,13 +266,12 @@ export default function HomeScreen() {
                 <View style={{ flex: 1 }}>
                     <Text style={styles.title} numberOfLines={1}>
                         {nearbyStations.find(s => s.uid === selectedStationUid)?.station.name.split(',')[0] ||
-                            aqiData?.city?.split(',')[0] ||
-                            (currentCityId === 'GPS_LOCATION' ? 'Current Location' : currentCityId) ||
-                            'India'}
+                            aqiData?.city ||
+                            t('dashboard.detectingLocation')}
                     </Text>
                     <Text style={styles.subtitle} numberOfLines={1}>
-                        {nearbyStations.find(s => s.uid === selectedStationUid)?.station.name ||
-                            aqiData?.city ||
+                        {aqiData?.coordinates ?
+                            `${aqiData.coordinates.latitude.toFixed(4)}°N, ${aqiData.coordinates.longitude.toFixed(4)}°E` :
                             t('dashboard.subtitle')}
                     </Text>
                 </View>

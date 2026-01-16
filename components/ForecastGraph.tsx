@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LineChart } from 'react-native-gifted-charts';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { DailyForecast } from '../services/aqiApi';
 
@@ -12,6 +13,8 @@ interface ForecastGraphProps {
 const { width } = Dimensions.get('window');
 
 export function ForecastGraph({ forecast }: ForecastGraphProps) {
+    const { t } = useTranslation();
+
     // Just use the available data without filtering
     const data = (forecast.pm25 || [])
         .slice(0, 5)
@@ -31,7 +34,7 @@ export function ForecastGraph({ forecast }: ForecastGraphProps) {
         <View style={styles.container}>
             <BlurView intensity={10} tint="dark" style={styles.glass}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Pollution Trend</Text>
+                    <Text style={styles.title}>{t('dashboard.pollutionTrend')}</Text>
                     {/* Tiny legend removed for minimalism */}
                 </View>
 

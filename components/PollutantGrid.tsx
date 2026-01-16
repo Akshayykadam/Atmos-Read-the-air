@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { PollutantData } from '../services/aqiApi';
 
@@ -19,17 +20,7 @@ const getPollutantColor = (key: string, value: number) => {
     return GenZTheme.colors.aqi.unhealthy;
 };
 
-const getPollutantName = (key: string) => {
-    const map: Record<string, string> = {
-        pm25: 'Particulate Matter\n(PM2.5)',
-        pm10: 'Particulate Matter\n(PM10)',
-        co: 'Carbon Monoxide\n(CO)',
-        so2: 'Sulfur Dioxide\n(SO2)',
-        no2: 'Nitrogen Dioxide\n(NO2)',
-        o3: 'Ozone\n(O3)',
-    };
-    return map[key] || key.toUpperCase();
-};
+// Removed getPollutantName and moved logic to render with t()
 
 const getPollutantUnit = (key: string) => {
     if (['pm25', 'pm10'].includes(key)) return 'μg/m³';
@@ -49,14 +40,16 @@ const getPollutantIcon = (key: string): keyof typeof Ionicons.glyphMap => {
 };
 
 export function PollutantGrid({ data }: PollutantGridProps) {
+    const { t } = useTranslation();
+
     // Filter out undefined values
     const validPollutants = Object.entries(data).filter(([_, val]) => val !== undefined);
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Major Air Pollutants</Text>
-                <Text style={styles.subtitle}>Pune</Text>
+                <Text style={styles.title}>{t('dashboard.majorPollutants')}</Text>
+                {/* Removed hardcoded city name as it is already in the main header */}
             </View>
 
             <View style={styles.grid}>
@@ -74,7 +67,7 @@ export function PollutantGrid({ data }: PollutantGridProps) {
 
                                     <View style={styles.infoContainer}>
                                         <Text style={styles.name} numberOfLines={2}>
-                                            {getPollutantName(key)}
+                                            {t(`pollutants.${key}`)}
                                         </Text>
                                     </View>
 

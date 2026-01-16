@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import { DailyForecast } from '../services/aqiApi';
 
@@ -9,6 +10,8 @@ interface ForecastCardProps {
 }
 
 export function ForecastCard({ forecast }: ForecastCardProps) {
+    const { t } = useTranslation();
+
     // Just use the available data - the API provides the most relevant forecast
     const dailyData = forecast.pm25 || [];
 
@@ -16,7 +19,7 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
         const date = new Date(dateString);
         const today = new Date();
 
-        if (date.toDateString() === today.toDateString()) return 'Today';
+        if (date.toDateString() === today.toDateString()) return t('common.today');
 
         return date.toLocaleDateString('en-US', { weekday: 'short' });
     };
@@ -34,7 +37,7 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
         <View style={styles.container}>
             <BlurView intensity={20} tint="dark" style={styles.glass}>
                 <View style={styles.headerRow}>
-                    <Text style={styles.title}>5-Day Forecast</Text>
+                    <Text style={styles.title}>{t('dashboard.forecast')}</Text>
                     <Text style={[styles.subtitle, { color: GenZTheme.colors.primary }]}>PM2.5</Text>
                 </View>
 

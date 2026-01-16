@@ -1,5 +1,6 @@
-import { AQICN_API_TOKEN, AQICN_BASE_URL } from '../constants/config';
 import { getCachedAQI, setCachedAQI } from './cacheService';
+import { INDIAN_CITIES } from '../constants/cities';
+import { getCityName } from './locationService';
 
 export interface PollutantData {
     pm25?: number;
@@ -49,139 +50,37 @@ export interface AQIData {
 }
 
 export interface AQIError {
-    type: 'network' | 'api' | 'notFound' | 'unknown';
+    type: 'permission' | 'timeout' | 'unavailable' | 'network' | 'notFound';
     message: string;
 }
 
-interface AQICNResponse {
-    status: string;
-    data: {
-        aqi: number;
-        idx: number;
-        attributions: Array<{ url: string; name: string }>;
-        city: {
-            name: string;
-            url: string;
-            geo: [number, number];
-        };
-        dominentpol?: string;
-        iaqi: {
-            pm25?: { v: number };
-            pm10?: { v: number };
-            o3?: { v: number };
-            no2?: { v: number };
-            so2?: { v: number };
-            co?: { v: number };
-            t?: { v: number };
-            h?: { v: number };
-            w?: { v: number };
-            p?: { v: number };
-        };
-        forecast?: {
-            daily: {
-                pm25?: Array<{ avg: number; day: string; max: number; min: number }>;
-                pm10?: Array<{ avg: number; day: string; max: number; min: number }>;
-                o3?: Array<{ avg: number; day: string; max: number; min: number }>;
-                uvi?: Array<{ avg: number; day: string; max: number; min: number }>;
-            };
-        };
-        time: {
-            s: string;
-            tz: string;
-            v: number;
-            iso: string;
-        };
-    };
-}
 
-// Known city coordinates for fresh API data (city endpoints often return stale data)
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-    'pune': { lat: 18.5204, lng: 73.8567 },
-    'mumbai': { lat: 19.0760, lng: 72.8777 },
-    'delhi': { lat: 28.6139, lng: 77.2090 },
-    'bangalore': { lat: 12.9716, lng: 77.5946 },
-    'hyderabad': { lat: 17.3850, lng: 78.4867 },
-    'chennai': { lat: 13.0827, lng: 80.2707 },
-    'kolkata': { lat: 22.5726, lng: 88.3639 },
-    'ahmedabad': { lat: 23.0225, lng: 72.5714 },
-};
+// Known city coordinates are now in INDIAN_CITIES in constants/cities.ts
 
 export async function fetchAQIByCity(cityId: string, forceRefresh = false): Promise<AQIData> {
-    // Use geo-based lookup for known cities (returns fresh data)
-    const coords = CITY_COORDINATES[cityId.toLowerCase()];
-    if (coords) {
-        return fetchAQIByCoordinates(coords.lat, coords.lng, forceRefresh);
+    // 1. Try to find city in our static list first (fastest)
+    const normalizedCityId = cityId.toLowerCase();
+    const city = INDIAN_CITIES.find(c => c.aqicnId === normalizedCityId || c.name.toLowerCase() === normalizedCityId);
+
+    if (city && city.lat && city.lng) {
+        return fetchAQIByCoordinates(city.lat, city.lng, forceRefresh);
     }
 
-    // Fallback to city endpoint for unknown cities
-    // Check cache first
-    if (!forceRefresh) {
-        const cached = await getCachedAQI(cityId);
-        // Ensure cached data has the new coordinates structure, otherwise fetch fresh
-        if (cached && (cached as AQIData).coordinates) {
-            return { ...(cached as AQIData), isCached: true };
-        }
-    }
-
+    // 2. If not found, try to geocode the city name using Open-Meteo Geocoding API
     try {
-        const url = `${AQICN_BASE_URL}/feed/${cityId}/?token=${AQICN_API_TOKEN}`;
-        const response = await fetch(url);
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityId)}&count=1&format=json`;
+        const response = await fetch(geoUrl);
+        const data = await response.json();
 
-        if (!response.ok) {
-            throw { type: 'network', message: 'Network request failed' } as AQIError;
+        if (data.results && data.results.length > 0) {
+            const { latitude, longitude } = data.results[0];
+            return fetchAQIByCoordinates(latitude, longitude, forceRefresh);
         }
-
-        const json: AQICNResponse = await response.json();
-
-        if (json.status !== 'ok') {
-            throw { type: 'notFound', message: 'City not found' } as AQIError;
-        }
-
-        const data = json.data;
-        const aqiData: AQIData = {
-            aqi: data.aqi,
-            city: data.city.name,
-            station: data.city.name,
-            dominantPollutant: data.dominentpol || 'pm25',
-            pollutants: {
-                pm25: data.iaqi.pm25?.v,
-                pm10: data.iaqi.pm10?.v,
-                o3: data.iaqi.o3?.v,
-                no2: data.iaqi.no2?.v,
-                so2: data.iaqi.so2?.v,
-                co: data.iaqi.co?.v,
-            },
-            weather: {
-                temperature: data.iaqi.t?.v,
-                humidity: data.iaqi.h?.v,
-                wind: data.iaqi.w?.v,
-                pressure: data.iaqi.p?.v,
-            },
-            forecast: {
-                pm25: data.forecast?.daily?.pm25,
-                pm10: data.forecast?.daily?.pm10,
-                o3: data.forecast?.daily?.o3,
-                uvi: data.forecast?.daily?.uvi,
-            },
-            coordinates: {
-                latitude: data.city.geo[0],
-                longitude: data.city.geo[1],
-            },
-            time: data.time.iso,
-            timestamp: data.time.v * 1000,
-            isCached: false,
-        };
-
-        // Cache the result
-        await setCachedAQI(cityId, aqiData);
-
-        return aqiData;
     } catch (error) {
-        if ((error as AQIError).type) {
-            throw error;
-        }
-        throw { type: 'network', message: 'Network error' } as AQIError;
+        console.error('Geocoding error:', error);
     }
+
+    throw { type: 'notFound', message: 'City not found' } as AQIError;
 }
 
 export async function fetchAQIByCoordinates(
@@ -189,7 +88,7 @@ export async function fetchAQIByCoordinates(
     lng: number,
     forceRefresh = false
 ): Promise<AQIData> {
-    const cacheKey = `geo_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+    const cacheKey = `openmeteo_${lat.toFixed(2)}_${lng.toFixed(2)}`;
 
     // Check cache first
     if (!forceRefresh) {
@@ -200,51 +99,71 @@ export async function fetchAQIByCoordinates(
     }
 
     try {
-        const url = `${AQICN_BASE_URL}/feed/geo:${lat};${lng}/?token=${AQICN_API_TOKEN}`;
+        // PRIMARY: Use Open-Meteo Air Quality API (always has fresh data!)
+        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi,us_aqi&timezone=auto`;
+
         const response = await fetch(url);
 
         if (!response.ok) {
             throw { type: 'network', message: 'Network request failed' } as AQIError;
         }
 
-        const json: AQICNResponse = await response.json();
+        const data = await response.json();
 
-        if (json.status !== 'ok') {
-            throw { type: 'notFound', message: 'No station found nearby' } as AQIError;
+        // Determine dominant pollutant
+        const pollutants = {
+            pm25: data.current.pm2_5,
+            pm10: data.current.pm10,
+            o3: data.current.ozone,
+            no2: data.current.nitrogen_dioxide,
+            so2: data.current.sulphur_dioxide,
+            co: data.current.carbon_monoxide,
+        };
+
+        // Find dominant pollutant based on contribution to AQI
+        let dominantPollutant = 'pm25';
+        const thresholds = { pm25: 35.4, pm10: 154, o3: 164, no2: 100, so2: 185, co: 12400 };
+        let maxRatio = 0;
+        for (const [key, value] of Object.entries(pollutants)) {
+            const ratio = (value || 0) / (thresholds[key as keyof typeof thresholds] || 1);
+            if (ratio > maxRatio) {
+                maxRatio = ratio;
+                dominantPollutant = key;
+            }
         }
 
-        const data = json.data;
+        // Get city name from native geocoding (reliable) or use "Near You"
+        let cityName = 'Near You';
+        try {
+            // Import this dynamically or assume it's available via parameters/imports
+            // Since we can't easily change imports in replace block without context, we assume import is added
+            // Actually, best to do this in the app layer, but for now let's try to use the service if imported
+
+            // Note: We need to import getCityName at the top of the file
+            const nativeCity = await getCityName(lat, lng);
+            if (nativeCity) {
+                cityName = nativeCity;
+            }
+        } catch {
+            // Ignore geocoding errors
+        }
+
         const aqiData: AQIData = {
-            aqi: data.aqi,
-            city: data.city.name,
-            station: data.city.name,
-            dominantPollutant: data.dominentpol || 'pm25',
-            pollutants: {
-                pm25: data.iaqi.pm25?.v,
-                pm10: data.iaqi.pm10?.v,
-                o3: data.iaqi.o3?.v,
-                no2: data.iaqi.no2?.v,
-                so2: data.iaqi.so2?.v,
-                co: data.iaqi.co?.v,
-            },
+            aqi: data.current.us_aqi,
+            city: cityName,
+            station: 'Open-Meteo Model',
+            dominantPollutant,
+            pollutants,
             weather: {
-                temperature: data.iaqi.t?.v,
-                humidity: data.iaqi.h?.v,
-                wind: data.iaqi.w?.v,
-                pressure: data.iaqi.p?.v,
+                // Weather data comes from separate API call
             },
-            forecast: {
-                pm25: data.forecast?.daily?.pm25,
-                pm10: data.forecast?.daily?.pm10,
-                o3: data.forecast?.daily?.o3,
-                uvi: data.forecast?.daily?.uvi,
-            },
+            forecast: await fetchForecastData(lat, lng),
             coordinates: {
-                latitude: data.city.geo[0],
-                longitude: data.city.geo[1],
+                latitude: data.latitude,
+                longitude: data.longitude,
             },
-            time: data.time.iso,
-            timestamp: data.time.v * 1000,
+            time: data.current.time,
+            timestamp: new Date(data.current.time).getTime(),
             isCached: false,
         };
 
@@ -274,25 +193,23 @@ interface SearchResponse {
     data: Station[];
 }
 
-export async function searchStations(keyword: string): Promise<Array<{ name: string; state: string; aqicnId: string }>> {
+
+export async function searchStations(keyword: string): Promise<Array<{ name: string; state: string; aqicnId: string; lat: number; lon: number }>> {
     try {
-        const url = `${AQICN_BASE_URL}/search/?keyword=${encodeURIComponent(keyword)}&token=${AQICN_API_TOKEN}`;
+        // Use Open-Meteo Geocoding API instead of AQICN search
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(keyword)}&count=10&format=json`;
         const response = await fetch(url);
-        const json: SearchResponse = await response.json();
+        const json = await response.json();
 
-        if (json.status !== 'ok') return [];
+        if (!json.results) return [];
 
-        return json.data.map(station => {
-            // Station name format is often "Station Name, City, Country" or "City - Station Name"
-            // We'll just use the full name for clarity
-            const parts = station.station.name.split(',');
-            const name = parts[0].trim();
-            const state = parts.length > 1 ? parts[1].trim() : '';
-
+        return json.results.map((place: any) => {
             return {
-                name: station.station.name, // Use full name to identify specific locations
-                state: state,
-                aqicnId: `@${station.uid}`, // WAQI search returns UIDs which use @ prefix for feed
+                name: place.name,
+                state: place.admin1 || place.country,
+                aqicnId: place.name.toLowerCase(), // Use name as ID since we don't have station IDs
+                lat: place.latitude,
+                lon: place.longitude,
             };
         });
     } catch (error) {
@@ -305,7 +222,7 @@ export type MapStation = {
     lat: number;
     lon: number;
     uid: number;
-    aqi: string; // "123" or "-"
+    aqi: string;
     station: {
         name: string;
         time: string;
@@ -318,22 +235,10 @@ export async function fetchStationsInBounds(
     maxLat: number,
     maxLng: number
 ): Promise<MapStation[]> {
-    try {
-        // WAQI API expects: latlng=lat1,lng1,lat2,lng2 (SW corner, NE corner)
-        const url = `${AQICN_BASE_URL}/map/bounds/?latlng=${minLat},${minLng},${maxLat},${maxLng}&token=${AQICN_API_TOKEN}`;
-
-        const response = await fetch(url);
-        const json = await response.json();
-
-
-
-        if (json.status !== 'ok') return [];
-
-        return json.data || [];
-    } catch (error) {
-        console.error('Error fetching map bounds:', error);
-        return [];
-    }
+    // Open-Meteo provides global coverage, not discrete stations.
+    // For now, we disable the map pins to remove AQICN dependency.
+    // Future improvement: Sample grid points within bounds.
+    return [];
 }
 
 // OpenAQ API for historical data (free, no key required)
@@ -427,5 +332,63 @@ export async function fetchHistoricalAQI(
     } catch (error) {
         console.error('OpenAQ error:', error);
         return [];
+    }
+}
+
+async function fetchForecastData(lat: number, lng: number): Promise<DailyForecast> {
+    try {
+        // Fetch 3 days history + 4 days forecast (total ~7 days trend)
+        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=pm2_5&timezone=auto&past_days=3&forecast_days=4`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data.hourly || !data.hourly.time || !data.hourly.pm2_5) {
+            return { pm25: [] };
+        }
+
+        const times = data.hourly.time as string[];
+        const values = data.hourly.pm2_5 as (number | null)[];
+
+        // Group by day
+        const dailyMap = new Map<string, number[]>();
+
+        times.forEach((timeStr, index) => {
+            const value = values[index];
+            if (value === null || value === undefined) return;
+
+            const day = timeStr.split('T')[0]; // YYYY-MM-DD
+            if (!dailyMap.has(day)) {
+                dailyMap.set(day, []);
+            }
+            dailyMap.get(day)?.push(value);
+        });
+
+        // Calculate min/max/avg for each day
+        const forecastEntries: ForecastEntry[] = [];
+
+        dailyMap.forEach((vals, day) => {
+            if (vals.length > 0) {
+                const min = Math.min(...vals);
+                const max = Math.max(...vals);
+                const sum = vals.reduce((a, b) => a + b, 0);
+                const avg = Math.round(sum / vals.length);
+
+                forecastEntries.push({
+                    day,
+                    min,
+                    max,
+                    avg
+                });
+            }
+        });
+
+        // Sort by date
+        forecastEntries.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
+
+        return { pm25: forecastEntries };
+    } catch (error) {
+        console.error('Forecast fetch error:', error);
+        return { pm25: [] };
     }
 }
