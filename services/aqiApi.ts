@@ -94,7 +94,26 @@ interface AQICNResponse {
     };
 }
 
+// Known city coordinates for fresh API data (city endpoints often return stale data)
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+    'pune': { lat: 18.5204, lng: 73.8567 },
+    'mumbai': { lat: 19.0760, lng: 72.8777 },
+    'delhi': { lat: 28.6139, lng: 77.2090 },
+    'bangalore': { lat: 12.9716, lng: 77.5946 },
+    'hyderabad': { lat: 17.3850, lng: 78.4867 },
+    'chennai': { lat: 13.0827, lng: 80.2707 },
+    'kolkata': { lat: 22.5726, lng: 88.3639 },
+    'ahmedabad': { lat: 23.0225, lng: 72.5714 },
+};
+
 export async function fetchAQIByCity(cityId: string, forceRefresh = false): Promise<AQIData> {
+    // Use geo-based lookup for known cities (returns fresh data)
+    const coords = CITY_COORDINATES[cityId.toLowerCase()];
+    if (coords) {
+        return fetchAQIByCoordinates(coords.lat, coords.lng, forceRefresh);
+    }
+
+    // Fallback to city endpoint for unknown cities
     // Check cache first
     if (!forceRefresh) {
         const cached = await getCachedAQI(cityId);

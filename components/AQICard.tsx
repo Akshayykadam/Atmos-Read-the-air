@@ -60,7 +60,7 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                             <Text style={styles.liveText}>Live AQI</Text>
                         </View>
                         <Text style={styles.aqiValue}>{data.aqi}</Text>
-                        <Text style={styles.aqiUnit}>AQI (US)</Text>
+                        <Text style={styles.aqiUnit}>AQI (India)</Text>
                     </View>
 
                     <View style={styles.statusSection}>
@@ -123,6 +123,15 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
                         <Text style={styles.scaleValue}>300</Text>
                         <Text style={styles.scaleValue}>301+</Text>
                     </View>
+                </View>
+
+                {/* Last Updated Timestamp */}
+                <View style={styles.timestampRow}>
+                    <Ionicons name="time-outline" size={14} color={GenZTheme.text.secondary} />
+                    <Text style={styles.timestampText}>
+                        Station data from: {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {data.isCached && ' (cached)'}
+                    </Text>
                 </View>
 
                 {/* Vayu Character - Placeholder removed until correct asset provided
@@ -283,5 +292,16 @@ const styles = StyleSheet.create({
         width: 140,
         height: 180,
         zIndex: 10, // On top of everything
+    },
+    timestampRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 16,
+        gap: 6,
+    },
+    timestampText: {
+        fontSize: 12,
+        color: GenZTheme.text.secondary,
     },
 });
