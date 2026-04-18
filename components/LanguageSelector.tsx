@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Modal, FlatList } from 'react-native
 import { useTranslation } from 'react-i18next';
 import { saveLanguage, getLanguageDisplayName } from '../services/i18n';
 import { SUPPORTED_LANGUAGES } from '../constants/config';
+import { GenZTheme } from '../constants/Theme';
 
 interface LanguageSelectorProps {
     visible: boolean;
@@ -71,71 +72,63 @@ export function LanguageSelector({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.25)',
         justifyContent: 'flex-end',
     },
     container: {
-        backgroundColor: '#1E1E1E', // Dark grey similar to other cards
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        backgroundColor: GenZTheme.cards.background,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
         padding: 24,
         paddingBottom: 40,
-        maxHeight: '60%',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: -4,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        maxHeight: '70%',
+        ...GenZTheme.cards.shadow,
     },
     title: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        marginBottom: 20,
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 18,
+        color: GenZTheme.text.primary,
+        marginBottom: 24,
         textAlign: 'center',
     },
     languageItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        borderRadius: 16,
-        marginBottom: 8,
-        backgroundColor: 'rgba(255,255,255,0.05)', // Transparent white
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        paddingVertical: 18,
+        paddingHorizontal: 24,
+        borderRadius: 24,
+        marginBottom: 12,
+        backgroundColor: GenZTheme.background, // Subtle secondary background
     },
     languageItemSelected: {
-        backgroundColor: 'rgba(108, 92, 231, 0.2)', // Primary color opacity
-        borderColor: '#6C4AB6',
+        backgroundColor: GenZTheme.colors.primaryContainer,
     },
     languageText: {
-        fontSize: 18,
-        color: '#CCCCCC',
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        fontSize: 16,
+        color: GenZTheme.text.secondary,
     },
     languageTextSelected: {
-        color: '#FFFFFF',
-        fontWeight: '700',
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        color: GenZTheme.text.primary,
     },
     checkmark: {
         fontSize: 20,
-        color: '#6C4AB6', // Primary color
+        color: GenZTheme.colors.primary,
         fontWeight: '700',
     },
     closeButton: {
-        marginTop: 16,
-        paddingVertical: 16,
+        marginTop: 20,
+        paddingVertical: 18,
         alignItems: 'center',
-        backgroundColor: '#6C4AB6', // Primary color for action
-        borderRadius: 16,
+        backgroundColor: GenZTheme.colors.primary,
+        borderRadius: 100, // Pill shaped button
+        ...GenZTheme.cards.shadow,
     },
     closeButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '700',
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        color: GenZTheme.colors.onPrimary,
+        fontSize: 14,
     },
 });

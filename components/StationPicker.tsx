@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { GenZTheme } from '../constants/Theme';
 import { MapStation } from '../services/aqiApi';
 
@@ -9,7 +9,7 @@ interface StationPickerProps {
     onSelectStation: (station: MapStation) => void;
 }
 
-export function StationPicker({ stations, selectedUid, onSelectStation }: StationPickerProps) {
+export const StationPicker = React.memo(function StationPicker({ stations, selectedUid, onSelectStation }: StationPickerProps) {
     const getAQIColor = (value: number) => {
         if (value <= 50) return GenZTheme.colors.aqi.good;
         if (value <= 100) return GenZTheme.colors.aqi.moderate;
@@ -29,19 +29,19 @@ export function StationPicker({ stations, selectedUid, onSelectStation }: Statio
     return (
         <View style={styles.container}>
             <Text style={styles.title}>NEARBY STATIONS</Text>
-            <ScrollView
+            <FlatList
+                data={stations}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
-            >
-                {stations.map((station) => {
+                keyExtractor={(item) => item.uid.toString()}
+                renderItem={({ item: station }) => {
                     const aqiVal = parseInt(station.aqi);
                     const isSelected = station.uid === selectedUid;
                     const color = isNaN(aqiVal) ? GenZTheme.text.secondary : getAQIColor(aqiVal);
 
                     return (
                         <Pressable
-                            key={station.uid}
                             style={[
                                 styles.stationChip,
                                 isSelected && styles.stationChipSelected,
@@ -64,11 +64,11 @@ export function StationPicker({ stations, selectedUid, onSelectStation }: Statio
                             </Text>
                         </Pressable>
                     );
-                })}
-            </ScrollView>
+                }}
+            />
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

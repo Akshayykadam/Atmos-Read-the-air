@@ -33,7 +33,7 @@ function PollutantCard({ label, value, unit, icon }: PollutantCardProps) {
     );
 }
 
-export function PollutantGrid({ data }: PollutantGridProps) {
+export const PollutantGrid = React.memo(function PollutantGrid({ data }: PollutantGridProps) {
     const { t } = useTranslation();
 
     const pollutants = [
@@ -62,7 +62,7 @@ export function PollutantGrid({ data }: PollutantGridProps) {
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

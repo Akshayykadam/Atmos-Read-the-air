@@ -56,14 +56,24 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
         try {
             // Debounce could be added here, but for now direct call
             const stations = await searchStations(text);
-            // Map to City interface
-            const found: City[] = stations.map(s => ({
-                name: s.name,
-                state: s.state,
-                aqicnId: s.aqicnId,
-                lat: s.lat,
-                lng: s.lon,
-            }));
+            
+            // Map to City interface, skipping duplicates
+            const seenIds = new Set<string>();
+            const found: City[] = [];
+            
+            for (const s of stations) {
+                if (!seenIds.has(s.aqicnId.toString())) {
+                    seenIds.add(s.aqicnId.toString());
+                    found.push({
+                        name: s.name,
+                        state: s.state,
+                        aqicnId: s.aqicnId.toString(),
+                        lat: s.lat,
+                        lng: s.lon,
+                    });
+                }
+            }
+            
             setResults(found);
         } catch (e) {
             console.error(e);

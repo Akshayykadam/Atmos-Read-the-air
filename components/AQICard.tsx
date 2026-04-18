@@ -22,7 +22,7 @@ const getAQIStatus = (aqi: number) => {
     return { label: 'categories.severe', color: GenZTheme.colors.aqi.severe, bg: '#6E0A1220' };
 };
 
-export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps) {
+export const AQICard = React.memo(function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps) {
     const { t } = useTranslation();
     const status = getAQIStatus(data.aqi);
 
@@ -105,7 +105,7 @@ export function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

@@ -8,7 +8,7 @@ interface HealthGuideProps {
     aqi: number;
 }
 
-export function HealthGuide({ aqi }: HealthGuideProps) {
+export const HealthGuide = React.memo(function HealthGuide({ aqi }: HealthGuideProps) {
     const { t } = useTranslation();
 
     const getRecommendations = (aqi: number) => {
@@ -54,7 +54,7 @@ export function HealthGuide({ aqi }: HealthGuideProps) {
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

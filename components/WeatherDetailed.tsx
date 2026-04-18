@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +19,7 @@ interface WeatherDetailedProps {
 
 const { width } = Dimensions.get('window');
 
-export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDetailedProps) {
+export const WeatherDetailed = React.memo(function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDetailedProps) {
     const { t } = useTranslation();
 
     if (isLoading) {
@@ -105,12 +105,17 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
             <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.hourlyScroll}>
-                {hourly.map((hour, index) => {
+            <FlatList
+                data={hourly}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.hourlyScroll}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item: hour, index }) => {
                     const info = getWeatherInfo(hour.weatherCode, true);
                     const isNow = index === 0;
                     return (
-                        <View key={index} style={[styles.hourlyItem, isNow && styles.hourlyItemActive]}>
+                        <View style={[styles.hourlyItem, isNow && styles.hourlyItemActive]}>
                             <Text style={[styles.hourlyTime, isNow && styles.hourlyTimeActive]}>
                                 {isNow ? t('weather.now') : hour.hour}
                             </Text>
@@ -124,8 +129,8 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
                             </Text>
                         </View>
                     );
-                })}
-            </ScrollView>
+                }}
+            />
 
             {/* Weekly Outlook - Editorial List */}
             <View style={styles.sectionHeader}>
@@ -153,7 +158,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
             <View style={{ height: 40 }} />
         </ScrollView>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

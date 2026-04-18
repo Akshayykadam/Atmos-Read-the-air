@@ -150,7 +150,7 @@ export default function HomeScreen() {
         fetchWeather();
     }, [aqiData?.coordinates?.latitude, aqiData?.coordinates?.longitude]);
 
-    const handleStationSelect = async (station: MapStation) => {
+    const handleStationSelect = useCallback(async (station: MapStation) => {
         isManualSelection.current = true;
         setSelectedStationUid(station.uid);
         setIsLoading(true);
@@ -165,17 +165,17 @@ export default function HomeScreen() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [t]);
 
-    const handleCityChange = () => {
+    const handleCityChange = useCallback(() => {
         router.push('/search');
-    };
+    }, [router]);
 
-    const handleAskAI = () => {
+    const handleAskAI = useCallback(() => {
         if (aqiData) {
             router.push('/chat');
         }
-    };
+    }, [aqiData, router]);
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
