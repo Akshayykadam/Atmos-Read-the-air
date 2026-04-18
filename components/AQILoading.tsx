@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
         paddingVertical: 100,
     },
     text: {
-        fontFamily: GenZTheme.typography.label.fontFamily,
+        // Removed fontFamily to prevent hang if fonts haven't loaded yet
         fontSize: 10,
         color: GenZTheme.text.secondary,
         marginTop: 16,

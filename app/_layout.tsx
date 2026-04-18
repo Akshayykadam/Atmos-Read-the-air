@@ -24,9 +24,9 @@ import { AQILoading } from '../components/AQILoading';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-    const [isI18nReady, setIsI18nReady] = useState(false);
+    const [appIsReady, setAppIsReady] = useState(false);
 
-    const [fontsLoaded] = useFonts({
+    const [fontsLoaded, fontError] = useFonts({
         Manrope_400Regular,
         Manrope_500Medium,
         Manrope_600SemiBold,
@@ -40,22 +40,29 @@ export default function RootLayout() {
     useEffect(() => {
         async function prepare() {
             try {
+                // Pre-load fonts, make any API calls you need to do here
                 await loadSavedLanguage();
-                setIsI18nReady(true);
             } catch (e) {
                 console.warn(e);
+            } finally {
+                // Tell the application to render
+                setAppIsReady(true);
             }
         }
+
         prepare();
     }, []);
 
     useEffect(() => {
-        if (fontsLoaded && isI18nReady) {
+        if (appIsReady && (fontsLoaded || fontError)) {
+            // This tells the splash screen to hide immediately! If we're already
+            // in the middle of a render cycle, then this will be called after
+            // the render has finished.
             SplashScreen.hideAsync();
         }
-    }, [fontsLoaded, isI18nReady]);
+    }, [appIsReady, fontsLoaded, fontError]);
 
-    if (!fontsLoaded || !isI18nReady) {
+    if (!appIsReady || (!fontsLoaded && !fontError)) {
         return <AQILoading />;
     }
 
