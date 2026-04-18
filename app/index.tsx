@@ -57,7 +57,8 @@ export default function HomeScreen() {
                     return;
                 }
                 const savedCity = await getSelectedCity();
-                if (aqiData && savedCity === currentCityId) {
+                const isShowingGps = !savedCity && currentCityId === 'GPS_LOCATION';
+                if (aqiData && (savedCity === currentCityId || isShowingGps)) {
                     return;
                 }
                 setIsLoading(true);
