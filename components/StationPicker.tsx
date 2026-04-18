@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { GenZTheme } from '../constants/Theme';
 import { MapStation } from '../services/aqiApi';
 
@@ -20,118 +19,104 @@ export function StationPicker({ stations, selectedUid, onSelectStation }: Statio
         return GenZTheme.colors.aqi.hazardous;
     };
 
-    // Extract short name from full station name
     const getShortName = (fullName: string) => {
-        // Station name is usually "Area, City, Country" - we want just the area
         const parts = fullName.split(',');
         return parts[0].trim();
     };
 
-    if (stations.length <= 1) return null; // Don't show picker if only one station
+    if (stations.length <= 1) return null;
 
     return (
         <View style={styles.container}>
-            <BlurView intensity={15} tint="dark" style={styles.glass}>
-                <Text style={styles.title}>Nearby Stations</Text>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollContent}
-                >
-                    {stations.map((station) => {
-                        const aqiVal = parseInt(station.aqi);
-                        const isSelected = station.uid === selectedUid;
-                        const color = isNaN(aqiVal) ? GenZTheme.text.secondary : getAQIColor(aqiVal);
+            <Text style={styles.title}>NEARBY STATIONS</Text>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {stations.map((station) => {
+                    const aqiVal = parseInt(station.aqi);
+                    const isSelected = station.uid === selectedUid;
+                    const color = isNaN(aqiVal) ? GenZTheme.text.secondary : getAQIColor(aqiVal);
 
-                        return (
-                            <Pressable
-                                key={station.uid}
-                                style={[
-                                    styles.stationChip,
-                                    isSelected && styles.stationChipSelected,
-                                    isSelected && { borderColor: color }
-                                ]}
-                                onPress={() => onSelectStation(station)}
-                            >
-                                <View style={[styles.aqiBadge, { backgroundColor: color }]}>
-                                    <Text style={styles.aqiText}>
-                                        {isNaN(aqiVal) ? '-' : aqiVal}
-                                    </Text>
-                                </View>
-                                <Text
-                                    style={[
-                                        styles.stationName,
-                                        isSelected && { color: GenZTheme.text.primary }
-                                    ]}
-                                    numberOfLines={1}
-                                >
-                                    {getShortName(station.station.name)}
+                    return (
+                        <Pressable
+                            key={station.uid}
+                            style={[
+                                styles.stationChip,
+                                isSelected && styles.stationChipSelected,
+                            ]}
+                            onPress={() => onSelectStation(station)}
+                        >
+                            <View style={[styles.aqiBadge, { backgroundColor: color }]}>
+                                <Text style={styles.aqiText}>
+                                    {isNaN(aqiVal) ? '-' : aqiVal}
                                 </Text>
-                            </Pressable>
-                        );
-                    })}
-                </ScrollView>
-            </BlurView>
+                            </View>
+                            <Text
+                                style={[
+                                    styles.stationName,
+                                    isSelected && { color: GenZTheme.colors.primary }
+                                ]}
+                                numberOfLines={1}
+                            >
+                                {getShortName(station.station.name)}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
+            </ScrollView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 16,
-        marginTop: 16,
-        marginBottom: 16,
-        borderRadius: 20,
-        overflow: 'hidden',
-        borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-    },
-    glass: {
-        paddingVertical: 16,
+        marginTop: 8,
+        marginBottom: 24,
     },
     title: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontFamily: GenZTheme.typography.label.fontFamily,
+        fontSize: 10,
         color: GenZTheme.text.secondary,
-        marginBottom: 12,
-        letterSpacing: 0.5,
-        paddingHorizontal: 16,
+        letterSpacing: 1.5,
+        marginBottom: 16,
+        paddingHorizontal: 24,
     },
     scrollContent: {
-        gap: 10,
-        paddingHorizontal: 16,
+        paddingHorizontal: 24,
+        gap: 12,
     },
     stationChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderWidth: 1.5,
-        borderColor: 'transparent',
+        backgroundColor: GenZTheme.cards.background,
+        borderRadius: 100,
+        paddingLeft: 4,
+        paddingRight: 16,
+        paddingVertical: 4,
+        ...GenZTheme.cards.shadow,
     },
     stationChipSelected: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: GenZTheme.colors.primaryContainer,
     },
     aqiBadge: {
         width: 32,
         height: 32,
-        borderRadius: 8,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 10,
     },
     aqiText: {
         color: '#fff',
-        fontWeight: '700',
-        fontSize: 13,
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 12,
     },
     stationName: {
+        fontFamily: GenZTheme.typography.title.fontFamily,
         color: GenZTheme.text.secondary,
-        fontSize: 13,
-        fontWeight: '500',
+        fontSize: 12,
+        marginLeft: 8,
         maxWidth: 150,
     },
 });

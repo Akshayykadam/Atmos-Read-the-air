@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions } fro
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { LineChart, BarChart } from 'react-native-gifted-charts';
+import { LineChart } from 'react-native-gifted-charts';
 import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
 import {
@@ -18,26 +18,6 @@ interface WeatherDetailedProps {
 }
 
 const { width } = Dimensions.get('window');
-
-// Weather-based gradient colors
-const getWeatherGradient = (code: number, isDay: boolean): string[] => {
-    if (code === 0 || code === 1) { // Clear
-        return isDay ? ['#FFD93D', '#FF9500'] : ['#4BA9FF', '#1E3A5F'];
-    }
-    if (code === 2 || code === 3) { // Cloudy
-        return ['#8E9AAF', '#5C677D'];
-    }
-    if (code >= 51 && code <= 67) { // Rain
-        return ['#4BA9FF', '#3D5A80'];
-    }
-    if (code >= 71 && code <= 77) { // Snow
-        return ['#E0E1DD', '#778DA9'];
-    }
-    if (code >= 95) { // Thunderstorm
-        return ['#7B2CBF', '#3C096C'];
-    }
-    return isDay ? ['#87CEEB', '#4BA9FF'] : ['#2D3436', '#636E72'];
-};
 
 export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDetailedProps) {
     const { t } = useTranslation();
@@ -54,7 +34,7 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
     if (!weatherData) {
         return (
             <View style={styles.loadingContainer}>
-                <Ionicons name="cloud-offline" size={48} color={GenZTheme.text.secondary} />
+                <Ionicons name="cloud-offline-outline" size={48} color={GenZTheme.text.secondary} />
                 <Text style={styles.loadingText}>{t('common.error')}</Text>
             </View>
         );
@@ -62,543 +42,203 @@ export function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDet
 
     const { current, hourly, daily } = weatherData;
     const weatherInfo = getWeatherInfo(current.weatherCode, current.isDay);
-    const gradient = getWeatherGradient(current.weatherCode, current.isDay);
 
     return (
-        <>
-            {/* Hero Weather Card */}
-            <View style={styles.heroContainer}>
-                <LinearGradient
-                    colors={[gradient[0], 'transparent']}
-                    start={{ x: 0.5, y: 1 }}
-                    end={{ x: 0.5, y: 0 }}
-                    style={[StyleSheet.absoluteFill, { opacity: 0.25 }]}
-                />
-                <BlurView intensity={25} tint="dark" style={styles.heroGlass}>
-                    {/* Top Row: Location + Weather Icon */}
-                    <View style={styles.heroHeader}>
-                        <View style={styles.liveIndicator}>
-                            <View style={[styles.liveDot, { backgroundColor: gradient[0] }]} />
-                            <Text style={styles.liveText}>{t('weather.liveWeather')}</Text>
-                        </View>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+            {/* Hero Weather Section - Editorial Impact */}
+            <View style={styles.heroSection}>
+                <View style={styles.heroMain}>
+                    <Text style={styles.heroTemp}>{Math.round(current.temperature)}°</Text>
+                    <View style={styles.heroMeta}>
+                        <Ionicons 
+                            name={weatherInfo.icon as any} 
+                            size={48} 
+                            color={GenZTheme.colors.primary} 
+                        />
+                        <Text style={styles.conditionText}>{weatherInfo.description}</Text>
+                        <Text style={styles.feelsLike}>{t('weather.feelsLike')} {Math.round(current.feelsLike)}°</Text>
                     </View>
+                </View>
 
-                    {/* Main Temperature Display */}
-                    <View style={styles.tempRow}>
-                        <View>
-                            <Text style={styles.heroTemp}>{Math.round(current.temperature)}°</Text>
-                            <Text style={styles.feelsLike}>{t('weather.feelsLike')} {Math.round(current.feelsLike)}°</Text>
-                        </View>
-                        <View style={styles.iconContainer}>
-                            <Ionicons
-                                name={weatherInfo.icon as any}
-                                size={72}
-                                color={current.isDay ? '#FFD93D' : '#4BA9FF'}
-                            />
-                        </View>
+                {/* Statistics - Tonal Modules */}
+                <View style={styles.statsStrip}>
+                    <View style={styles.statModule}>
+                        <Text style={styles.statLabel}>{t('weather.humidity')}</Text>
+                        <Text style={styles.statValue}>{current.humidity}%</Text>
                     </View>
-
-                    {/* Condition Badge */}
-                    <View style={[styles.conditionBadge, { backgroundColor: gradient[0] + '30' }]}>
-                        <Text style={[styles.conditionText, { color: gradient[0] }]}>
-                            {weatherInfo.description}
-                        </Text>
+                    <View style={styles.statModule}>
+                        <Text style={styles.statLabel}>{t('weather.wind')}</Text>
+                        <Text style={styles.statValue}>{Math.round(current.windSpeed)} km/h</Text>
                     </View>
-
-                    {/* Stats Grid */}
-                    <View style={styles.statsGrid}>
-                        <View style={styles.statItem}>
-                            <Ionicons name="water" size={22} color="#4BA9FF" />
-                            <Text style={styles.statValue}>{current.humidity}%</Text>
-                            <Text style={styles.statLabel}>{t('weather.humidity')}</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                            <Ionicons name="navigate" size={22} color="#A8DADC" />
-                            <Text style={styles.statValue}>{Math.round(current.windSpeed)} {t('weather.kmh')}</Text>
-                            <Text style={styles.statLabel}>{t('weather.wind')}</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                            <Ionicons name="sunny" size={22} color="#FFD93D" />
-                            <Text style={styles.statValue}>{Math.round(current.uvIndex)}</Text>
-                            <Text style={styles.statLabel}>{t('weather.uvIndex')}</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                            <Ionicons name="eye" size={22} color="#E9ECEF" />
-                            <Text style={styles.statValue}>{current.visibility.toFixed(0)} {t('weather.km')}</Text>
-                            <Text style={styles.statLabel}>{t('weather.visibility')}</Text>
-                        </View>
+                    <View style={styles.statModule}>
+                        <Text style={styles.statLabel}>{t('weather.uvIndex')}</Text>
+                        <Text style={styles.statValue}>{Math.round(current.uvIndex)}</Text>
                     </View>
-                </BlurView>
+                </View>
             </View>
 
-            {/* Sun Times Card */}
+            {/* Sun Cycle Card - Glassmorphism fallback */}
             {daily[0] && (
-                <View style={styles.card}>
-                    <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
-                        <View style={styles.sunTimesRow}>
-                            <View style={styles.sunTimeItem}>
-                                <LinearGradient
-                                    colors={['#FFD93D', '#FF9500']}
-                                    style={styles.sunIconBg}
-                                >
-                                    <Ionicons name="sunny" size={24} color="#fff" />
-                                </LinearGradient>
-                                <View>
-                                    <Text style={styles.sunTimeLabel}>{t('weather.sunrise')}</Text>
-                                    <Text style={styles.sunTimeValue}>{daily[0].sunrise}</Text>
-                                </View>
-                            </View>
-                            <View style={styles.sunTimeDivider} />
-                            <View style={styles.sunTimeItem}>
-                                <LinearGradient
-                                    colors={['#4BA9FF', '#1E3A5F']}
-                                    style={styles.sunIconBg}
-                                >
-                                    <Ionicons name="moon" size={24} color="#fff" />
-                                </LinearGradient>
-                                <View>
-                                    <Text style={styles.sunTimeLabel}>{t('weather.sunset')}</Text>
-                                    <Text style={styles.sunTimeValue}>{daily[0].sunset}</Text>
-                                </View>
-                            </View>
+                <View style={[styles.card, styles.sunCard]}>
+                    <View style={styles.sunItem}>
+                        <View style={[styles.sunIconBg, { backgroundColor: '#FED0B9' }]}>
+                            <Ionicons name="sunny-outline" size={24} color="#7A5745" />
                         </View>
-                    </BlurView>
-                </View>
-            )}
-
-            {/* Hourly Forecast */}
-            {hourly.length > 0 && (
-                <View style={styles.card}>
-                    <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
-                        <View style={styles.sectionHeader}>
-                            <Ionicons name="time-outline" size={18} color={GenZTheme.colors.primary} />
-                            <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
+                        <View>
+                            <Text style={styles.sunLabel}>{t('weather.sunrise')}</Text>
+                            <Text style={styles.sunValue}>{daily[0].sunrise}</Text>
                         </View>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <View style={styles.hourlyContainer}>
-                                {hourly.map((hour, index) => {
-                                    const info = getWeatherInfo(hour.weatherCode, true);
-                                    const isNow = index === 0;
-                                    return (
-                                        <View
-                                            key={index}
-                                            style={[
-                                                styles.hourlyItem,
-                                                isNow && styles.hourlyItemActive
-                                            ]}
-                                        >
-                                            <Text style={[styles.hourlyTime, isNow && styles.hourlyTimeActive]}>
-                                                {isNow ? t('weather.now') : hour.hour}
-                                            </Text>
-                                            <Ionicons
-                                                name={info.icon as any}
-                                                size={28}
-                                                color={isNow ? '#FFD93D' : GenZTheme.text.primary}
-                                            />
-                                            <Text style={[styles.hourlyTemp, isNow && styles.hourlyTempActive]}>
-                                                {hour.temperature}°
-                                            </Text>
-                                            {hour.precipitation > 0 && (
-                                                <View style={styles.rainBadge}>
-                                                    <Ionicons name="water" size={10} color="#4BA9FF" />
-                                                    <Text style={styles.rainText}>{hour.precipitation}%</Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                    );
-                                })}
-                            </View>
-                        </ScrollView>
-                    </BlurView>
-                </View>
-            )}
-
-            {/* Temperature Trend Graph */}
-            {daily.length > 0 && (
-                <View style={styles.card}>
-                    <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
-                        <View style={styles.sectionHeader}>
-                            <Ionicons name="thermometer-outline" size={18} color="#FF6B6B" />
-                            <Text style={styles.sectionTitle}>{t('weather.sevenDayTemp')}</Text>
-                        </View>
-
-                        {/* Min/Max Summary */}
-                        <View style={styles.tempSummary}>
-                            <View style={styles.tempSummaryItem}>
-                                <Ionicons name="arrow-up" size={16} color="#FF6B6B" />
-                                <Text style={styles.tempSummaryLabel}>{t('weather.highest')}</Text>
-                                <Text style={styles.tempSummaryValue}>
-                                    {Math.max(...daily.map(d => d.tempMax))}°
-                                </Text>
-                            </View>
-                            <View style={styles.tempSummaryDivider} />
-                            <View style={styles.tempSummaryItem}>
-                                <Ionicons name="arrow-down" size={16} color="#4BA9FF" />
-                                <Text style={styles.tempSummaryLabel}>{t('weather.lowest')}</Text>
-                                <Text style={styles.tempSummaryValue}>
-                                    {Math.min(...daily.map(d => d.tempMin))}°
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.graphContainer}>
-                            <LineChart
-                                data={daily.map(day => ({
-                                    value: day.tempMax,
-                                    label: day.dayName,
-                                    labelTextStyle: { color: GenZTheme.text.secondary, fontSize: 10 },
-                                }))}
-                                data2={daily.map(day => ({
-                                    value: day.tempMin,
-                                }))}
-                                height={120}
-                                width={width - 110} // Reduced width to fit Y-axis
-                                spacing={(width - 110) / daily.length}
-                                initialSpacing={10}
-                                color1="#FF6B6B"
-                                color2="#4BA9FF"
-                                thickness={3}
-                                hideDataPoints={false}
-                                dataPointsColor1="#FF6B6B"
-                                dataPointsColor2="#4BA9FF"
-                                dataPointsRadius={4}
-                                curved
-                                areaChart
-                                startFillColor1="#FF6B6B"
-                                endFillColor1="#FF6B6B"
-                                startOpacity1={0.3}
-                                endOpacity1={0.0}
-                                startFillColor2="#4BA9FF"
-                                endFillColor2="#4BA9FF"
-                                startOpacity2={0.3}
-                                endOpacity2={0.0}
-                                hideRules={false}
-                                rulesColor="rgba(255,255,255,0.05)"
-                                yAxisColor="rgba(255,255,255,0.1)"
-                                yAxisTextStyle={{ color: GenZTheme.text.secondary, fontSize: 10 }}
-                                yAxisLabelWidth={35}
-                                noOfSections={3}
-                                xAxisColor="rgba(255,255,255,0.1)"
-                                pointerConfig={{
-                                    pointerStripHeight: 120,
-                                    pointerStripColor: 'rgba(255,255,255,0.1)',
-                                    pointerStripWidth: 2,
-                                    pointerColor: 'rgba(255,255,255,0.3)',
-                                    radius: 6,
-                                    pointerLabelWidth: 100,
-                                    pointerLabelHeight: 90,
-                                    activatePointersOnLongPress: false,
-                                    autoAdjustPointerLabelPosition: true,
-                                    pointerLabelComponent: (items: any) => {
-                                        const high = items[0]?.value;
-                                        const low = items[1]?.value;
-                                        return (
-                                            <View
-                                                style={{
-                                                    height: 70,
-                                                    width: 80,
-                                                    justifyContent: 'center',
-                                                    marginTop: -30,
-                                                    marginLeft: -40,
-                                                    backgroundColor: 'rgba(0,0,0,0.8)',
-                                                    borderRadius: 8,
-                                                    padding: 8,
-                                                }}
-                                            >
-                                                <Text style={{ color: '#FF6B6B', fontSize: 12, fontWeight: 'bold' }}>
-                                                    {t('weather.high')}: {high}°
-                                                </Text>
-                                                <Text style={{ color: '#4BA9FF', fontSize: 12, fontWeight: 'bold', marginTop: 4 }}>
-                                                    {t('weather.low')}: {low}°
-                                                </Text>
-                                            </View>
-                                        );
-                                    },
-                                }}
-                            />
-                        </View>
-                    </BlurView>
-                </View>
-            )}
-
-            {/* UV Index Forecast */}
-            {daily.length > 0 && (
-                <View style={styles.card}>
-                    <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
-                        <View style={styles.sectionHeader}>
-                            <Ionicons name="sunny" size={18} color="#FFCC00" />
-                            <Text style={styles.sectionTitle}>{t('weather.sevenDayUv')}</Text>
-                        </View>
-                        <View style={[styles.graphContainer, { marginTop: 10 }]}>
-                            <LineChart
-                                data={daily.map(day => ({
-                                    value: day.uvIndexMax,
-                                    label: day.dayName,
-                                    labelTextStyle: { color: GenZTheme.text.secondary, fontSize: 10 },
-                                }))}
-                                height={120}
-                                width={width - 110}
-                                spacing={(width - 110) / daily.length}
-                                initialSpacing={10}
-                                color="#FFCC00"
-                                thickness={3}
-                                hideDataPoints={false}
-                                dataPointsColor="#FFCC00"
-                                dataPointsRadius={4}
-                                curved
-                                areaChart
-                                startFillColor="#FFCC00"
-                                endFillColor="#FFCC00"
-                                startOpacity={0.3}
-                                endOpacity={0.0}
-                                hideRules={false}
-                                rulesColor="rgba(255,255,255,0.05)"
-                                yAxisColor="rgba(255,255,255,0.1)"
-                                yAxisTextStyle={{ color: GenZTheme.text.secondary, fontSize: 10 }}
-                                yAxisLabelWidth={35}
-                                noOfSections={5}
-                                maxValue={10}
-                                stepValue={2}
-                                roundToDigits={0}
-                                xAxisColor="rgba(255,255,255,0.1)"
-                                pointerConfig={{
-                                    pointerStripHeight: 120,
-                                    pointerStripColor: 'rgba(255,255,255,0.1)',
-                                    pointerStripWidth: 2,
-                                    pointerColor: 'rgba(255,255,255,0.3)',
-                                    radius: 6,
-                                    pointerLabelWidth: 100,
-                                    pointerLabelHeight: 90,
-                                    activatePointersOnLongPress: false,
-                                    autoAdjustPointerLabelPosition: true,
-                                    pointerLabelComponent: (items: any) => {
-                                        const uv = items[0]?.value;
-                                        let color = '#4CD964';
-                                        let level = t('weather.low');
-                                        if (uv >= 3) { color = '#FFCC00'; level = t('weather.moderate'); }
-                                        if (uv >= 6) { color = '#FF9500'; level = t('weather.high'); }
-                                        if (uv >= 8) { color = '#FF3B30'; level = t('weather.veryHigh'); }
-                                        if (uv >= 11) { color = '#AF52DE'; level = t('weather.extreme'); }
-
-                                        return (
-                                            <View
-                                                style={{
-                                                    height: 70,
-                                                    width: 80,
-                                                    justifyContent: 'center',
-                                                    marginTop: -30,
-                                                    marginLeft: -40,
-                                                    backgroundColor: 'rgba(0,0,0,0.8)',
-                                                    borderRadius: 8,
-                                                    padding: 8,
-                                                }}
-                                            >
-                                                <Text style={{ color: color, fontSize: 14, fontWeight: 'bold' }}>
-                                                    {t('weather.uv')}: {uv?.toFixed(1)}
-                                                </Text>
-                                                <Text style={{ color: '#fff', fontSize: 12, marginTop: 4 }}>
-                                                    {level}
-                                                </Text>
-                                            </View>
-                                        );
-                                    },
-                                }}
-                            />
-                        </View>
-                    </BlurView>
-                </View>
-            )}
-
-            {/* 7-Day Forecast */}
-            <View style={styles.card}>
-                <BlurView intensity={20} tint="dark" style={styles.cardGlass}>
-                    <View style={styles.sectionHeader}>
-                        <Ionicons name="calendar-outline" size={18} color={GenZTheme.colors.primary} />
-                        <Text style={styles.sectionTitle}>{t('weather.sevenDayForecast')}</Text>
                     </View>
-                    {daily.map((day, index) => {
-                        const info = getWeatherInfo(day.weatherCode, true);
-                        const isToday = index === 0;
-                        return (
-                            <View key={index} style={[styles.dailyRow, isToday && styles.dailyRowToday]}>
-                                <Text style={[styles.dailyDay, isToday && styles.dailyDayToday]}>
-                                    {isToday ? t('weather.today') : day.dayName}
-                                </Text>
-                                <View style={styles.dailyWeather}>
-                                    <Ionicons name={info.icon as any} size={24} color={GenZTheme.text.primary} />
-                                    {day.precipitationSum > 0 && (
-                                        <View style={styles.dailyRainBadge}>
-                                            <Ionicons name="water" size={10} color="#4BA9FF" />
-                                            <Text style={styles.dailyRainText}>
-                                                {day.precipitationSum.toFixed(1)}mm
-                                            </Text>
-                                        </View>
-                                    )}
-                                </View>
-                                <View style={styles.dailyTemps}>
-                                    <Text style={styles.dailyMax}>{day.tempMax}°</Text>
-                                    <View style={styles.tempBar}>
-                                        <View
-                                            style={[
-                                                styles.tempBarFill,
-                                                { width: `${((day.tempMax - day.tempMin) / 20) * 100}%` }
-                                            ]}
-                                        />
-                                    </View>
-                                    <Text style={styles.dailyMin}>{day.tempMin}°</Text>
-                                </View>
+                    <View style={styles.sunItem}>
+                        <View style={[styles.sunIconBg, { backgroundColor: '#D5E3FF' }]}>
+                            <Ionicons name="moon-outline" size={24} color="#3B6095" />
+                        </View>
+                        <View>
+                            <Text style={styles.sunLabel}>{t('weather.sunset')}</Text>
+                            <Text style={styles.sunValue}>{daily[0].sunset}</Text>
+                        </View>
+                    </View>
+                </View>
+            )}
+
+            {/* Hourly Forecast - Horizontal Editorial Row */}
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.hourlyScroll}>
+                {hourly.map((hour, index) => {
+                    const info = getWeatherInfo(hour.weatherCode, true);
+                    const isNow = index === 0;
+                    return (
+                        <View key={index} style={[styles.hourlyItem, isNow && styles.hourlyItemActive]}>
+                            <Text style={[styles.hourlyTime, isNow && styles.hourlyTimeActive]}>
+                                {isNow ? t('weather.now') : hour.hour}
+                            </Text>
+                            <Ionicons 
+                                name={info.icon as any} 
+                                size={28} 
+                                color={isNow ? GenZTheme.colors.primary : GenZTheme.text.secondary} 
+                            />
+                            <Text style={[styles.hourlyTemp, isNow && styles.hourlyTempActive]}>
+                                {hour.temperature}°
+                            </Text>
+                        </View>
+                    );
+                })}
+            </ScrollView>
+
+            {/* Weekly Outlook - Editorial List */}
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{t('weather.sevenDayForecast')}</Text>
+            </View>
+            <View style={styles.weeklyCard}>
+                {daily.map((day, index) => {
+                    const info = getWeatherInfo(day.weatherCode, true);
+                    return (
+                        <View key={index} style={styles.dailyRow}>
+                            <Text style={styles.dailyDay}>{index === 0 ? t('weather.today') : day.dayName}</Text>
+                            <View style={styles.dailyInfo}>
+                                <Ionicons name={info.icon as any} size={24} color={GenZTheme.colors.primary} />
+                                <Text style={styles.dailyCondition}>{info.description}</Text>
                             </View>
-                        );
-                    })}
-                </BlurView>
+                            <View style={styles.dailyTemps}>
+                                <Text style={styles.dailyMax}>{day.tempMax}°</Text>
+                                <Text style={styles.dailyMin}>{day.tempMin}°</Text>
+                            </View>
+                        </View>
+                    );
+                })}
             </View>
 
-            <View style={{ height: 20 }} />
-        </>
+            <View style={{ height: 40 }} />
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    contentContainer: {
+        paddingBottom: 40,
+    },
     loadingContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
         paddingVertical: 100,
+        alignItems: 'center',
     },
     loadingText: {
+        fontFamily: GenZTheme.typography.body.fontFamily,
         color: GenZTheme.text.secondary,
-        fontSize: 14,
         marginTop: 16,
     },
-    // Hero Card
-    heroContainer: {
-        borderRadius: 28,
-        overflow: 'hidden',
-        marginHorizontal: 16,
-        marginTop: 8,
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        backgroundColor: 'rgba(20, 20, 20, 0.5)',
+    heroSection: {
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        marginBottom: 32,
     },
-    heroGlass: {
-        padding: 24,
-    },
-    heroHeader: {
-        marginBottom: 16,
-    },
-    liveIndicator: {
+    heroMain: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-    },
-    liveDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-    },
-    liveText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: GenZTheme.text.secondary,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    tempRow: {
-        flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        marginBottom: 40,
     },
     heroTemp: {
-        fontSize: 80,
-        fontWeight: '200',
+        fontFamily: GenZTheme.typography.display.fontFamily,
+        fontSize: 100,
         color: GenZTheme.text.primary,
-        lineHeight: 85,
+        letterSpacing: -6,
+        lineHeight: 110,
+    },
+    heroMeta: {
+        alignItems: 'flex-end',
+    },
+    conditionText: {
+        fontFamily: GenZTheme.typography.headline.fontFamily,
+        fontSize: 24,
+        color: GenZTheme.text.primary,
+        marginTop: 8,
     },
     feelsLike: {
+        fontFamily: GenZTheme.typography.body.fontFamily,
         fontSize: 14,
         color: GenZTheme.text.secondary,
         marginTop: 4,
     },
-    iconContainer: {
-        shadowColor: '#FFD93D',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-    },
-    conditionBadge: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        marginTop: 16,
-    },
-    conditionText: {
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    statsGrid: {
+    statsStrip: {
         flexDirection: 'row',
-        marginTop: 24,
-        paddingTop: 20,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'space-between',
+        backgroundColor: GenZTheme.cards.secondary,
+        borderRadius: GenZTheme.borderRadius.xl,
+        padding: 24,
     },
-    statItem: {
-        flex: 1,
+    statModule: {
         alignItems: 'center',
-    },
-    statDivider: {
-        width: 1,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-    },
-    statValue: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: GenZTheme.text.primary,
-        marginTop: 8,
     },
     statLabel: {
+        fontFamily: GenZTheme.typography.label.fontFamily,
         fontSize: 10,
         color: GenZTheme.text.secondary,
-        marginTop: 2,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        marginBottom: 6,
     },
-    // Cards
-    card: {
-        borderRadius: 24,
-        overflow: 'hidden',
-        marginHorizontal: 16,
-        marginTop: 16,
-        borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-        backgroundColor: 'rgba(20, 20, 20, 0.4)',
-    },
-    cardGlass: {
-        padding: 20,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: '700',
+    statValue: {
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 18,
         color: GenZTheme.text.primary,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
     },
-    // Sun Times
-    sunTimesRow: {
+    card: {
+        backgroundColor: GenZTheme.cards.background,
+        marginHorizontal: 16,
+        borderRadius: GenZTheme.borderRadius.xl,
+        padding: 24,
+        ...GenZTheme.cards.shadow,
+    },
+    sunCard: {
         flexDirection: 'row',
-        alignItems: 'center',
+        justifyContent: 'space-around',
+        marginBottom: 32,
     },
-    sunTimeItem: {
-        flex: 1,
+    sunItem: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
@@ -606,194 +246,110 @@ const styles = StyleSheet.create({
     sunIconBg: {
         width: 48,
         height: 48,
-        borderRadius: 16,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    sunTimeLabel: {
-        fontSize: 12,
+    sunLabel: {
+        fontFamily: GenZTheme.typography.label.fontFamily,
+        fontSize: 10,
         color: GenZTheme.text.secondary,
     },
-    sunTimeValue: {
+    sunValue: {
+        fontFamily: GenZTheme.typography.title.fontFamily,
         fontSize: 18,
-        fontWeight: '700',
         color: GenZTheme.text.primary,
-        marginTop: 2,
     },
-    sunTimeDivider: {
-        width: 1,
-        height: 40,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        marginHorizontal: 16,
+    sectionHeader: {
+        paddingHorizontal: 24,
+        marginBottom: 16,
     },
-    // Hourly
-    hourlyContainer: {
-        flexDirection: 'row',
-        gap: 8,
+    sectionTitle: {
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 18,
+        color: GenZTheme.text.primary,
+    },
+    hourlyScroll: {
+        paddingLeft: 24,
+        marginBottom: 40,
     },
     hourlyItem: {
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        borderRadius: 16,
-        minWidth: 60,
+        marginRight: 16,
+        padding: 16,
+        borderRadius: GenZTheme.borderRadius.l,
+        width: 80,
     },
     hourlyItemActive: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: GenZTheme.cards.background,
+        ...GenZTheme.cards.shadow,
     },
     hourlyTime: {
+        fontFamily: GenZTheme.typography.label.fontFamily,
         fontSize: 12,
         color: GenZTheme.text.secondary,
-        marginBottom: 10,
-        fontWeight: '500',
+        marginBottom: 12,
     },
     hourlyTimeActive: {
         color: GenZTheme.colors.primary,
         fontWeight: '700',
     },
     hourlyTemp: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 18,
         color: GenZTheme.text.primary,
-        marginTop: 10,
+        marginTop: 12,
     },
     hourlyTempActive: {
         color: GenZTheme.colors.primary,
     },
-    rainBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 2,
-        marginTop: 6,
+    weeklyCard: {
+        backgroundColor: GenZTheme.cards.background,
+        marginHorizontal: 16,
+        borderRadius: GenZTheme.borderRadius.xl,
+        padding: 16,
+        ...GenZTheme.cards.shadow,
     },
-    rainText: {
-        fontSize: 10,
-        color: '#4BA9FF',
-    },
-    // Daily
     dailyRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 14,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.05)',
-    },
-    dailyRowToday: {
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        marginHorizontal: -20,
-        paddingHorizontal: 20,
-        borderRadius: 12,
+        borderBottomColor: 'rgba(0,0,0,0.03)',
     },
     dailyDay: {
-        width: 50,
+        width: 60,
+        fontFamily: GenZTheme.typography.title.fontFamily,
         fontSize: 14,
-        fontWeight: '500',
-        color: GenZTheme.text.secondary,
-    },
-    dailyDayToday: {
         color: GenZTheme.text.primary,
-        fontWeight: '700',
     },
-    dailyWeather: {
+    dailyInfo: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 12,
     },
-    dailyRainBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 3,
-        backgroundColor: 'rgba(75, 169, 255, 0.15)',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 8,
-    },
-    dailyRainText: {
-        fontSize: 10,
-        color: '#4BA9FF',
+    dailyCondition: {
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        fontSize: 14,
+        color: GenZTheme.text.secondary,
     },
     dailyTemps: {
         flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
+        gap: 12,
     },
     dailyMax: {
-        fontSize: 15,
-        fontWeight: '700',
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 16,
         color: GenZTheme.text.primary,
         width: 30,
         textAlign: 'right',
     },
-    tempBar: {
-        width: 50,
-        height: 4,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 2,
-    },
-    tempBarFill: {
-        height: '100%',
-        backgroundColor: GenZTheme.colors.primary,
-        borderRadius: 2,
-    },
     dailyMin: {
-        fontSize: 15,
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: 16,
         color: GenZTheme.text.secondary,
         width: 30,
-    },
-    // Graph styles
-    graphContainer: {
-        marginHorizontal: -10,
-        marginTop: 8,
-    },
-    legendRow: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 24,
-        marginTop: 16,
-    },
-    legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    legendDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-    },
-    legendText: {
-        fontSize: 12,
-        color: GenZTheme.text.secondary,
-    },
-    // Temperature summary styles
-    tempSummary: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 16,
-        paddingVertical: 12,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-    },
-    tempSummaryItem: {
-        flex: 1,
-        alignItems: 'center',
-        gap: 4,
-    },
-    tempSummaryLabel: {
-        fontSize: 11,
-        color: GenZTheme.text.secondary,
-        marginTop: 2,
-    },
-    tempSummaryValue: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: GenZTheme.text.primary,
-    },
-    tempSummaryDivider: {
-        width: 1,
-        height: 40,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        textAlign: 'right',
     },
 });

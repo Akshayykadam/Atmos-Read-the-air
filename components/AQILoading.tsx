@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { GenZTheme } from '../constants/Theme';
 
 interface AQILoadingProps {
@@ -9,7 +9,8 @@ interface AQILoadingProps {
 export function AQILoading({ message }: AQILoadingProps) {
     return (
         <View style={styles.container}>
-            <ActivityIndicator size="large" color={GenZTheme.colors.primary} />
+            <ActivityIndicator size="small" color={GenZTheme.colors.primary} />
+            {message && <Text style={styles.text}>{message.toUpperCase()}</Text>}
         </View>
     );
 }
@@ -20,5 +21,13 @@ const styles = StyleSheet.create({
         backgroundColor: GenZTheme.background,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingVertical: 100,
+    },
+    text: {
+        fontFamily: GenZTheme.typography.label.fontFamily,
+        fontSize: 10,
+        color: GenZTheme.text.secondary,
+        marginTop: 16,
+        letterSpacing: 2,
     },
 });

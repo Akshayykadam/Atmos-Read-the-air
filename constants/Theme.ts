@@ -1,81 +1,95 @@
 
-export const GenZTheme = {
-    background: '#121212', // Darker Black
-    text: {
-        primary: '#FAFAFA', // Almost White
-        secondary: 'rgba(208, 210, 215, 0.9)', // Light Grey
-        light: '#FFFFFF',
-        accent: '#4BA9FF', // Bright Blue
-    },
-    cards: {
-        background: 'rgba(30, 30, 30, 0.6)',
-        shadow: 'none',
-        border: 'rgba(255, 255, 255, 0.1)',
-        backdrop: 'blur(12px)',
-    },
-    colors: {
-        primary: '#4BA9FF', // Bright Blue
-        secondary: '#A0A0A0',
-        success: '#50F0E6', // Cyan-Green
-        warning: '#FAD519', // Yellow
-        danger: '#E95478', // Pinkish-Red
-        info: '#AF52DE', // Purple
-        dark: '#121212',
-        light: '#FFFFFF',
-        aqi: {
-            good: '#50F0E6',
-            moderate: '#FAD519',
-            poor: '#FF9500',
-            unhealthy: '#E95478',
-            severe: '#AF52DE',
-            hazardous: '#8B0000',
-        }
-    },
-    gradients: {
-        primary: ['#4BA9FF', '#007AFF'],
-        background: ['#121212', '#121212'], // Solid dark
-        card: ['rgba(30, 30, 30, 0.8)', 'rgba(30, 30, 30, 0.4)'],
-        good: ['#50F0E6', '#00F260'],
-        moderate: ['#FAD519', '#F7971E'],
-        unhealthy: ['#E95478', '#cb2d3e'],
-    },
-    glass: {
-        default: {
-            backgroundColor: 'rgba(20, 20, 20, 0.6)',
-            borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-        },
-        heavy: {
-            backgroundColor: 'rgba(34, 39, 44, 0.85)',
-            borderColor: 'rgba(255,255,255,0.2)',
-            borderWidth: 1,
-        }
-    },
-    spacing: {
-        s: 8,
-        m: 16,
-        l: 24,
-        xl: 32,
-        xxl: 40,
-    },
-    borderRadius: {
-        s: 12,
-        m: 16,
-        l: 32,
-        xl: 50,
+export const PastelTheme = {
+  background: '#f6fafe', // Base Layer
+  surface: '#f6fafe',
+  text: {
+    primary: '#2a343a', // on-surface
+    secondary: '#566167', // on-surface-variant
+    light: '#ffffff',
+    accent: '#096b60', // primary
+  },
+  cards: {
+    background: '#ffffff', // surface-container-lowest
+    secondary: '#eef4fa', // surface-container-low
+    border: 'rgba(169, 179, 187, 0.15)', // outline-variant (15% opacity)
+    shadow: {
+        shadowColor: "#2a343a",
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.06,
+        shadowRadius: 40,
+        elevation: 10,
     }
+  },
+  colors: {
+    primary: '#096b60',
+    onPrimary: '#e2fff8',
+    primaryContainer: '#a1f2e3',
+    secondary: '#3b6095',
+    secondaryContainer: '#d5e3ff',
+    tertiary: '#7a5745',
+    tertiaryContainer: '#fed0b9',
+    error: '#fa746f', // error_container
+    success: '#096b60',
+    warning: '#7a5745',
+    aqi: {
+      good: '#096b60',
+      moderate: '#3b6095', // Using secondary blue for calm weather/moderate
+      poor: '#7a5745', // Warm peach
+      unhealthy: '#fa746f', // Error container red
+      severe: '#6e0a12', // Darker red/maroon
+      hazardous: '#67040d',
+    }
+  },
+  gradients: {
+    hero: ['#a1f2e3', '#d5e3ff'], // primary_fixed to secondary_fixed
+    aqiTrack: ['#a1f2e3', '#fed0b9', '#fa746f'],
+  },
+  spacing: {
+    s: 8,
+    m: 16,
+    l: 24,
+    xl: 32,
+    xxl: 48, // 3rem
+  },
+  borderRadius: {
+    s: 12,
+    m: 16,
+    l: 24,
+    xl: 48, // 3rem (ROUND_FULL / editorial look)
+  },
+  typography: {
+    display: {
+      fontFamily: 'Manrope_600SemiBold',
+      fontSize: 56, // 3.5rem
+      letterSpacing: -2.24, // -0.04em
+    },
+    headline: {
+        fontFamily: 'Manrope_500Medium',
+        fontSize: 32, // 2rem
+    },
+    title: {
+        fontFamily: 'Inter_500Medium',
+        fontSize: 18, // 1.125rem
+    },
+    body: {
+        fontFamily: 'Inter_400Regular',
+        fontSize: 14, // 0.875rem
+    },
+    label: {
+        fontFamily: 'Inter_700Bold',
+        fontSize: 11, // 0.6875rem
+    }
+  }
 };
 
-// Pastel versions of AQI colors
+// Aliasing for compatibility during transition
+export const GenZTheme = PastelTheme;
+
 export const AQIColors = {
-    good: '#B9FBC0', // Mint Green
-    moderate: '#FDFFB6', // Pastel Yellow
-    unhealthySensitive: '#FFD6A5', // Pastel Orange
-    unhealthy: '#FFADAD', // Pastel Red
-    veryUnhealthy: '#CDB4DB', // Pastel Purple
-    hazardous: '#A0C4FF', // Pastel Blue (or maybe dark purple/maroon usually, but keeping it aesthetic) - wait, hazardous should be scary. Let's keep it reddish/brown but nicer.
-    // Actually, for AQI, readability is key. Let's stick to standard but nicer hexes.
-    goodStandard: '#00b894',
-    moderateStandard: '#ffeaa7',
-    unhealthyStandard: '#fab1a0',
+  good: '#096b60',
+  moderate: '#3b6095',
+  poor: '#7a5745',
+  unhealthy: '#fa746f',
+  severe: '#6e0a12',
+  hazardous: '#67040d',
 };

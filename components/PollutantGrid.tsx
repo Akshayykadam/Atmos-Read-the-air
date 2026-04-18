@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { GenZTheme } from '../constants/Theme';
@@ -10,78 +9,56 @@ interface PollutantGridProps {
     data: PollutantData;
 }
 
-// Helper to get color based on specific pollutant value (standard breakpoints)
-// Simplified for this implementation to match screenshot aesthetics mostly.
-const getPollutantColor = (key: string, value: number) => {
-    // Rough logic:
-    if (value < 50) return GenZTheme.colors.aqi.good;
-    if (value < 100) return GenZTheme.colors.aqi.moderate;
-    if (value < 150) return GenZTheme.colors.aqi.poor;
-    return GenZTheme.colors.aqi.unhealthy;
-};
+interface PollutantCardProps {
+    label: string;
+    value: number | string;
+    unit: string;
+    icon: string;
+}
 
-// Removed getPollutantName and moved logic to render with t()
-
-const getPollutantUnit = (key: string) => {
-    if (['pm25', 'pm10'].includes(key)) return 'μg/m³';
-    return 'ppb';
-};
-
-const getPollutantIcon = (key: string): keyof typeof Ionicons.glyphMap => {
-    const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-        pm25: 'cloudy', // Using filled icons maybe? or outline
-        pm10: 'cloud',
-        o3: 'sunny',
-        no2: 'flame',
-        so2: 'water', // Acid rain?
-        co: 'car',
-    };
-    return iconMap[key] || 'ellipse';
-};
+function PollutantCard({ label, value, unit, icon }: PollutantCardProps) {
+    return (
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
+                <View style={styles.iconContainer}>
+                    <Ionicons name={icon as any} size={16} color={GenZTheme.colors.primary} />
+                </View>
+                <Text style={styles.label}>{label}</Text>
+            </View>
+            <View style={styles.valueContainer}>
+                <Text style={styles.value}>{value}</Text>
+                <Text style={styles.unit}>{unit}</Text>
+            </View>
+        </View>
+    );
+}
 
 export function PollutantGrid({ data }: PollutantGridProps) {
     const { t } = useTranslation();
 
-    // Filter out undefined values
-    const validPollutants = Object.entries(data).filter(([_, val]) => val !== undefined);
+    const pollutants = [
+        { key: 'pm25', label: 'PM2.5', unit: 'μg/m³', icon: 'leaf-outline' },
+        { key: 'pm10', label: 'PM10', unit: 'μg/m³', icon: 'analytics-outline' },
+        { key: 'o3', label: 'O₃', unit: 'ppb', icon: 'sunny-outline' },
+        { key: 'no2', label: 'NO₂', unit: 'ppb', icon: 'flash-outline' },
+        { key: 'so2', label: 'SO₂', unit: 'ppb', icon: 'cloud-outline' },
+        { key: 'co', label: 'CO', unit: 'ppm', icon: 'skull-outline' },
+    ];
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>{t('dashboard.majorPollutants')}</Text>
-                {/* Removed hardcoded city name as it is already in the main header */}
-            </View>
-
+            <Text style={styles.title}>{t('dashboard.majorPollutants')}</Text>
             <View style={styles.grid}>
-                {validPollutants.map(([key, value]) => {
-                    const color = getPollutantColor(key, value as number);
-
-                    return (
-                        <View key={key} style={styles.cardWrapper}>
-                            <BlurView intensity={20} tint="dark" style={styles.card}>
-                                <View style={[styles.colorBar, { backgroundColor: color }]} />
-                                <View style={styles.cardContent}>
-                                    <View style={styles.iconContainer}>
-                                        <Ionicons name={getPollutantIcon(key)} size={24} color={GenZTheme.text.secondary} />
-                                    </View>
-
-                                    <View style={styles.infoContainer}>
-                                        <Text style={styles.name} numberOfLines={2}>
-                                            {t(`pollutants.${key}`)}
-                                        </Text>
-                                    </View>
-
-                                    <View style={styles.valueContainer}>
-                                        <Text style={styles.value}>{value}</Text>
-                                        <Text style={styles.unit}>{getPollutantUnit(key)}</Text>
-                                    </View>
-
-                                    <Ionicons name="chevron-forward" size={16} color={GenZTheme.text.secondary} />
-                                </View>
-                            </BlurView>
-                        </View>
-                    );
-                })}
+                {pollutants.map((p) => (
+                    <PollutantCard
+                        key={p.key}
+                        label={p.label}
+                        //@ts-ignore
+                        value={data[p.key] || '--'}
+                        unit={p.unit}
+                        icon={p.icon}
+                    />
+                ))}
             </View>
         </View>
     );
@@ -89,77 +66,59 @@ export function PollutantGrid({ data }: PollutantGridProps) {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 24,
+        marginTop: 32,
         paddingHorizontal: 16,
     },
-    header: {
-        marginBottom: 16,
-        paddingHorizontal: 8,
-    },
     title: {
-        fontSize: 18,
-        fontWeight: '700',
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        fontSize: GenZTheme.typography.title.fontSize,
         color: GenZTheme.text.primary,
-        marginBottom: 4,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: GenZTheme.colors.primary,
-        fontWeight: '600',
+        marginBottom: 20,
+        marginLeft: 8,
     },
     grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 12,
-    },
-    cardWrapper: {
-        borderRadius: 16,
-        overflow: 'hidden',
-        borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-        backgroundColor: 'rgba(34, 39, 44, 0.4)',
     },
     card: {
-        flexDirection: 'row',
-        height: 70, // Fixed height for consistency
+        backgroundColor: GenZTheme.cards.background, // surface-container-lowest
+        width: '48%',
+        padding: 20,
+        borderRadius: GenZTheme.borderRadius.xl,
+        ...GenZTheme.cards.shadow,
     },
-    colorBar: {
-        width: 4,
-        // borderBottomRightRadius: 2, // Check if this was the duplicate or causing issue
-        borderTopRightRadius: 2,
-        borderBottomRightRadius: 2,
-        marginLeft: 0,
-        height: '100%',
-    },
-    cardContent: {
-        flex: 1,
+    cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        gap: 12,
+        marginBottom: 12,
     },
     iconContainer: {
-        width: 40,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: GenZTheme.colors.primaryContainer,
         alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
     },
-    infoContainer: {
-        flex: 1,
-    },
-    name: {
-        fontSize: 13,
+    label: {
+        fontFamily: GenZTheme.typography.label.fontFamily,
+        fontSize: 12,
         color: GenZTheme.text.secondary,
-        fontWeight: '500',
     },
     valueContainer: {
-        alignItems: 'flex-end',
-        marginRight: 8,
-        minWidth: 50,
+        flexDirection: 'row',
+        alignItems: 'baseline',
     },
     value: {
-        fontSize: 18,
-        fontWeight: '700',
+        fontFamily: GenZTheme.typography.headline.fontFamily,
+        fontSize: 24,
         color: GenZTheme.text.primary,
+        marginRight: 4,
     },
     unit: {
+        fontFamily: GenZTheme.typography.body.fontFamily,
         fontSize: 10,
         color: GenZTheme.text.secondary,
     },
