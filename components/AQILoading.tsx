@@ -25,9 +25,9 @@ const styles = StyleSheet.create({
     },
     text: {
         // Removed fontFamily to prevent hang if fonts haven't loaded yet
-        fontSize: 10,
+        fontSize: 11,
         color: GenZTheme.text.secondary,
-        marginTop: 16,
-        letterSpacing: 2,
+        marginTop: 20,
+        letterSpacing: 2.5,
     },
 });

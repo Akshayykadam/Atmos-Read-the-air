@@ -38,7 +38,7 @@ export default function SearchScreen() {
             {/* Custom Header with Back Button */}
             <View style={styles.header}>
                 <Pressable style={styles.backButton} onPress={handleBack}>
-                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+                    <Ionicons name="arrow-back" size={24} color={GenZTheme.text.primary} />
                 </Pressable>
                 <Text style={styles.headerTitle}>{t('search.title')}</Text>
                 <View style={styles.placeholder} />
@@ -63,24 +63,19 @@ const styles = StyleSheet.create({
         backgroundColor: GenZTheme.background,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: GenZTheme.cards.background,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-    },
-    backIcon: {
-        fontSize: 20,
-        color: '#FFFFFF',
-        fontWeight: '600',
+        ...GenZTheme.cards.shadow,
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        color: GenZTheme.text.primary,
+        letterSpacing: 1,
     },
     placeholder: {
         width: 40,

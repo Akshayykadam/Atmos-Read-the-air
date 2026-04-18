@@ -80,11 +80,12 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
 
     const popularCities = INDIAN_CITIES.slice(0, 6);
 
-    const renderCityItem = (city: City) => {
+    const renderCityItem = (city: City, prefix: string = '') => {
         const isCurrent = city.aqicnId === currentCityId;
+        const key = prefix ? `${prefix}-${city.aqicnId}` : city.aqicnId;
         return (
             <Pressable
-                key={city.aqicnId}
+                key={key}
                 style={[
                     styles.cityItem,
                     isCurrent && styles.currentCityItem // Optional: change border/bg
@@ -95,7 +96,7 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
                     <Ionicons
                         name={isCurrent ? "location" : "location-outline"}
                         size={20}
-                        color={isCurrent ? GenZTheme.colors.success : GenZTheme.colors.primary}
+                        color={isCurrent ? GenZTheme.colors.primary : GenZTheme.text.secondary}
                         style={{ marginRight: 12 }}
                     />
                     <View>
@@ -123,26 +124,26 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
                     value={query}
                     onChangeText={handleSearch}
                     placeholder={t('search.placeholder')}
-                    placeholderTextColor="#999"
+                    placeholderTextColor={GenZTheme.text.secondary}
                     autoFocus
                 />
                 {query.length > 0 && (
                     <Pressable onPress={() => handleSearch('')}>
-                        <Text style={styles.clearIcon}>✕</Text>
+                        <Ionicons name="close-circle" style={styles.clearIcon} />
                     </Pressable>
                 )}
             </View>
 
             {isSearching && (
-                <ActivityIndicator style={styles.loader} color="#1a1a2e" />
+                <ActivityIndicator style={styles.loader} color={GenZTheme.colors.primary} />
             )}
 
             {/* Search Results */}
             {query.length > 0 && results.length > 0 && (
                 <FlatList
                     data={results}
-                    keyExtractor={(item) => item.aqicnId}
-                    renderItem={({ item }) => renderCityItem(item)}
+                    keyExtractor={(item) => `search-${item.aqicnId}`}
+                    renderItem={({ item }) => renderCityItem(item, 'search')}
                 />
             )}
 
@@ -160,14 +161,14 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
                     {recentCities.length > 0 && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('search.recent')}</Text>
-                            {recentCities.map((city) => renderCityItem(city))}
+                            {recentCities.map((city) => renderCityItem(city, 'recent'))}
                         </View>
                     )}
 
                     {/* Popular Cities */}
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>{t('search.popular')}</Text>
-                        {popularCities.map((city) => renderCityItem(city))}
+                        {popularCities.map((city) => renderCityItem(city, 'popular'))}
                     </View>
                 </ScrollView>
             )}
@@ -183,15 +184,14 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        marginHorizontal: 20,
+        backgroundColor: GenZTheme.cards.background,
+        marginHorizontal: 24,
         marginTop: 20,
-        marginBottom: 16,
+        marginBottom: 24,
         paddingHorizontal: 24,
-        borderRadius: 32,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        height: 60,
+        borderRadius: 100,
+        height: 56,
+        ...GenZTheme.cards.shadow,
     },
     searchIcon: {
         fontSize: 18,
@@ -199,66 +199,65 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 14,
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        color: GenZTheme.text.primary,
         paddingVertical: 16,
-        color: '#FFFFFF',
-        fontWeight: '500',
     },
     clearIcon: {
-        fontSize: 16,
-        color: '#rgba(255,255,255,0.5)',
+        fontSize: 20,
+        color: GenZTheme.text.secondary,
         padding: 4,
     },
     loader: {
         marginVertical: 20,
     },
     section: {
-        paddingHorizontal: 16,
-        marginBottom: 20,
+        paddingHorizontal: 24,
+        marginBottom: 24,
     },
     sectionTitle: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: 'rgba(255,255,255,0.5)',
+        fontSize: 10,
+        fontFamily: GenZTheme.typography.label.fontFamily,
+        color: GenZTheme.text.secondary,
         marginBottom: 16,
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 1.5,
     },
     cityItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        backgroundColor: GenZTheme.cards.background, // Dark card
-        borderRadius: 20,
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
+        paddingVertical: 18,
+        paddingHorizontal: 24,
+        backgroundColor: GenZTheme.cards.background,
+        borderRadius: 24,
+        marginBottom: 12,
+        ...GenZTheme.cards.shadow,
     },
     currentCityItem: {
-        borderColor: GenZTheme.colors.success + '50', // Subtle green border
-        borderWidth: 1,
-        backgroundColor: GenZTheme.colors.success + '10', // Very subtle green tint
+        backgroundColor: GenZTheme.colors.primaryContainer,
     },
     currentText: {
-        color: GenZTheme.colors.success,
+        color: GenZTheme.colors.primary,
+        fontFamily: GenZTheme.typography.body.fontFamily,
         fontSize: 12,
-        fontWeight: '700',
     },
     cityName: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#FFFFFF',
+        fontSize: 14,
+        fontFamily: GenZTheme.typography.title.fontFamily,
+        color: GenZTheme.text.primary,
     },
     cityState: {
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.5)',
+        fontSize: 12,
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        color: GenZTheme.text.secondary,
         marginTop: 2,
     },
     cityNameHi: {
-        fontSize: 16,
-        color: 'rgba(255,255,255,0.7)',
+        fontSize: 14,
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        color: GenZTheme.text.secondary,
     },
     cityInfoWrapper: {
         flexDirection: 'row',
@@ -270,8 +269,8 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
     },
     noResultsText: {
-        fontSize: 16,
-        color: 'rgba(255,255,255,0.5)',
-        fontWeight: '500',
+        fontSize: 14,
+        fontFamily: GenZTheme.typography.body.fontFamily,
+        color: GenZTheme.text.secondary,
     },
 });
