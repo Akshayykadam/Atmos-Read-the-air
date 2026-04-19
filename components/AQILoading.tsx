@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface AQILoadingProps {
     message?: string;
 }
 
 export function AQILoading({ message }: AQILoadingProps) {
+    const { theme: GenZTheme } = useTheme();
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: GenZTheme.background }]}>
             <ActivityIndicator size="small" color={GenZTheme.colors.primary} />
-            {message && <Text style={styles.text}>{message.toUpperCase()}</Text>}
+            {message && <Text style={[styles.text, { color: GenZTheme.text.secondary }]}>{message.toUpperCase()}</Text>}
         </View>
     );
 }
@@ -18,15 +19,12 @@ export function AQILoading({ message }: AQILoadingProps) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: GenZTheme.background,
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 100,
     },
     text: {
-        // Removed fontFamily to prevent hang if fonts haven't loaded yet
         fontSize: 11,
-        color: GenZTheme.text.secondary,
         marginTop: 20,
         letterSpacing: 2.5,
     },

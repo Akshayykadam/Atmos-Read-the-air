@@ -1,5 +1,6 @@
 
-export const PastelTheme = {
+
+export const PastelLightTheme = {
   background: '#f6fafe', // Base Layer
   surface: '#f6fafe',
   text: {
@@ -33,15 +34,15 @@ export const PastelTheme = {
     warning: '#7a5745',
     aqi: {
       good: '#096b60',
-      moderate: '#3b6095', // Using secondary blue for calm weather/moderate
-      poor: '#7a5745', // Warm peach
-      unhealthy: '#fa746f', // Error container red
-      severe: '#6e0a12', // Darker red/maroon
+      moderate: '#3b6095',
+      poor: '#7a5745',
+      unhealthy: '#fa746f',
+      severe: '#6e0a12',
       hazardous: '#67040d',
     }
   },
   gradients: {
-    hero: ['#a1f2e3', '#d5e3ff'], // primary_fixed to secondary_fixed
+    hero: ['#a1f2e3', '#d5e3ff'], 
     aqiTrack: ['#a1f2e3', '#fed0b9', '#fa746f'],
   },
   spacing: {
@@ -49,41 +50,76 @@ export const PastelTheme = {
     m: 16,
     l: 24,
     xl: 32,
-    xxl: 48, // 3rem
+    xxl: 48, 
   },
   borderRadius: {
     s: 12,
     m: 16,
     l: 24,
-    xl: 48, // 3rem (ROUND_FULL / editorial look)
+    xl: 48, 
   },
   typography: {
     display: {
       fontFamily: 'Manrope_600SemiBold',
-      fontSize: 56, // 3.5rem
-      letterSpacing: -2.24, // -0.04em
+      fontSize: 56,
+      letterSpacing: -2.24,
     },
     headline: {
         fontFamily: 'Manrope_500Medium',
-        fontSize: 32, // 2rem
+        fontSize: 32,
     },
     title: {
         fontFamily: 'Inter_500Medium',
-        fontSize: 18, // 1.125rem
+        fontSize: 18,
     },
     body: {
         fontFamily: 'Inter_400Regular',
-        fontSize: 14, // 0.875rem
+        fontSize: 14,
     },
     label: {
         fontFamily: 'Inter_700Bold',
-        fontSize: 11, // 0.6875rem
+        fontSize: 11,
     }
   }
 };
 
+export const PastelDarkTheme = {
+  ...PastelLightTheme,
+  background: '#12171a', // Deep Slate Base
+  surface: '#1b2226',
+  text: {
+    ...PastelLightTheme.text,
+    primary: '#f6fafe', // Flipped from light background
+    secondary: '#a9b3bb', 
+  },
+  cards: {
+    ...PastelLightTheme.cards,
+    background: '#1b2226', // surface-container-lowest (dark)
+    secondary: '#222b30', // surface-container-low
+    border: 'rgba(255, 255, 255, 0.08)',
+    shadow: {
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.25,
+        shadowRadius: 40,
+        elevation: 10,
+    }
+  },
+  colors: {
+    ...PastelLightTheme.colors,
+    onPrimary: '#12171a', // Contrast on dark
+  },
+  gradients: {
+    hero: ['#1b2226', '#222b30'], // Subtler for dark mode
+    aqiTrack: ['#a1f2e3', '#fed0b9', '#fa746f'],
+  }
+};
+
+export type ThemeType = typeof PastelLightTheme;
+
 // Aliasing for compatibility during transition
-export const GenZTheme = PastelTheme;
+export const GenZTheme = PastelLightTheme;
+export const PastelTheme = PastelLightTheme;
 
 export const AQIColors = {
   good: '#096b60',
@@ -93,3 +129,4 @@ export const AQIColors = {
   severe: '#6e0a12',
   hazardous: '#67040d',
 };
+

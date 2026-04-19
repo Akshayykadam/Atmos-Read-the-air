@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { saveLanguage, getLanguageDisplayName } from '../services/i18n';
 import { SUPPORTED_LANGUAGES } from '../constants/config';
-import { GenZTheme } from '../constants/Theme';
 
 interface LanguageSelectorProps {
     visible: boolean;
@@ -16,7 +17,9 @@ export function LanguageSelector({
     onClose,
     currentLanguage,
 }: LanguageSelectorProps) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
 
     const handleSelectLanguage = async (language: string) => {
         await saveLanguage(language);
@@ -69,7 +72,7 @@ export function LanguageSelector({
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.25)',

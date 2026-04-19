@@ -4,16 +4,19 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 
 import { CitySearch } from '../components/CitySearch';
 import { City } from '../constants/cities';
 import { getSelectedCity, setSelectedCity } from '../services/cacheService';
-import { GenZTheme } from '../constants/Theme';
 
 export default function SearchScreen() {
     const router = useRouter();
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
     const [currentCityId, setCurrentCityId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
@@ -49,7 +52,7 @@ export default function SearchScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: GenZTheme.background,

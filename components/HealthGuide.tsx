@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 
 interface HealthGuideProps {
     aqi: number;
@@ -10,6 +11,8 @@ interface HealthGuideProps {
 
 export const HealthGuide = React.memo(function HealthGuide({ aqi }: HealthGuideProps) {
     const { t } = useTranslation();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
 
     const getRecommendations = (aqi: number) => {
         if (aqi <= 50) {
@@ -56,7 +59,7 @@ export const HealthGuide = React.memo(function HealthGuide({ aqi }: HealthGuideP
     );
 });
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         backgroundColor: GenZTheme.colors.tertiaryContainer, // Warm peach tone
         marginHorizontal: 16,

@@ -5,7 +5,8 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-gifted-charts';
 import { useTranslation } from 'react-i18next';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import {
     OpenMeteoData,
     getWeatherInfo,
@@ -21,6 +22,8 @@ const { width } = Dimensions.get('window');
 
 export const WeatherDetailed = React.memo(function WeatherDetailed({ weatherData, isLoading, cityName }: WeatherDetailedProps) {
     const { t } = useTranslation();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
 
     if (isLoading) {
         return (
@@ -137,7 +140,7 @@ export const WeatherDetailed = React.memo(function WeatherDetailed({ weatherData
                 <Text style={styles.sectionTitle}>{t('weather.sevenDayForecast')}</Text>
             </View>
             <View style={styles.weeklyCard}>
-                {daily.map((day, index) => {
+                {daily.map((day: any, index: number) => {
                     const info = getWeatherInfo(day.weatherCode, true);
                     return (
                         <View key={index} style={styles.dailyRow}>
@@ -160,7 +163,7 @@ export const WeatherDetailed = React.memo(function WeatherDetailed({ weatherData
     );
 });
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         flex: 1,
     },

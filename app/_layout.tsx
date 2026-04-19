@@ -19,6 +19,7 @@ import {
 import '../services/i18n';
 import { loadSavedLanguage } from '../services/i18n';
 import { AQILoading } from '../components/AQILoading';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -67,8 +68,17 @@ export default function RootLayout() {
     }
 
     return (
+        <ThemeProvider>
+            <InnerLayout />
+        </ThemeProvider>
+    );
+}
+
+function InnerLayout() {
+    const { isDark } = useTheme();
+    return (
         <>
-            <StatusBar style="dark" />
+            <StatusBar style={isDark ? "light" : "dark"} />
             <Slot />
         </>
     );

@@ -2,39 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { PollutantData } from '../services/aqiApi';
 
 interface PollutantGridProps {
     data: PollutantData;
 }
 
-interface PollutantCardProps {
-    label: string;
-    value: number | string;
-    unit: string;
-    icon: string;
-}
-
-function PollutantCard({ label, value, unit, icon }: PollutantCardProps) {
-    return (
-        <View style={styles.card}>
-            <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
-                    <Ionicons name={icon as any} size={16} color={GenZTheme.colors.primary} />
-                </View>
-                <Text style={styles.label}>{label}</Text>
-            </View>
-            <View style={styles.valueContainer}>
-                <Text style={styles.value}>{value}</Text>
-                <Text style={styles.unit}>{unit}</Text>
-            </View>
-        </View>
-    );
-}
-
 export const PollutantGrid = React.memo(function PollutantGrid({ data }: PollutantGridProps) {
     const { t } = useTranslation();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
 
     const pollutants = [
         { key: 'pm25', label: 'PM2.5', unit: 'μg/m³', icon: 'leaf-outline' },
@@ -45,26 +24,37 @@ export const PollutantGrid = React.memo(function PollutantGrid({ data }: Polluta
         { key: 'co', label: 'CO', unit: 'ppm', icon: 'skull-outline' },
     ];
 
+    const renderPollutant = (pollutant: typeof pollutants[0]) => {
+        const val = data?.[pollutant.key as keyof PollutantData];
+        if (val === undefined) return null;
+
+        return (
+            <View key={pollutant.key} style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <View style={styles.iconContainer}>
+                        <Ionicons name={pollutant.icon as any} size={16} color={GenZTheme.colors.primary} />
+                    </View>
+                    <Text style={styles.label}>{pollutant.label}</Text>
+                </View>
+                <View style={styles.valueContainer}>
+                    <Text style={styles.value}>{Math.round(val as number)}</Text>
+                    <Text style={styles.unit}>{pollutant.unit}</Text>
+                </View>
+            </View>
+        );
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{t('dashboard.majorPollutants')}</Text>
             <View style={styles.grid}>
-                {pollutants.map((p) => (
-                    <PollutantCard
-                        key={p.key}
-                        label={p.label}
-                        //@ts-ignore
-                        value={data[p.key] || '--'}
-                        unit={p.unit}
-                        icon={p.icon}
-                    />
-                ))}
+                {pollutants.map(renderPollutant)}
             </View>
         </View>
     );
 });
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         marginTop: 32,
         paddingHorizontal: 16,

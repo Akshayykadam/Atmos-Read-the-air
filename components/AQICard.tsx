@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { AQIData } from '../services/aqiApi';
 
 interface AQICardProps {
@@ -14,17 +15,19 @@ interface AQICardProps {
 const { width } = Dimensions.get('window');
 
 // Helper to get helper text/color based on AQI using Pastel scale
-const getAQIStatus = (aqi: number) => {
-    if (aqi <= 50) return { label: 'categories.good', color: GenZTheme.colors.aqi.good, bg: '#E2FFF8' };
-    if (aqi <= 100) return { label: 'categories.moderate', color: GenZTheme.colors.aqi.moderate, bg: '#D5E3FF' };
-    if (aqi <= 150) return { label: 'categories.poor', color: GenZTheme.colors.aqi.poor, bg: '#FED0B9' };
-    if (aqi <= 200) return { label: 'categories.unhealthy', color: GenZTheme.colors.aqi.unhealthy, bg: '#FA746F40' };
-    return { label: 'categories.severe', color: GenZTheme.colors.aqi.severe, bg: '#6E0A1220' };
+const getAQIStatus = (aqi: number, theme: any) => {
+    if (aqi <= 50) return { label: 'categories.good', color: theme.colors.aqi.good, bg: '#E2FFF8' };
+    if (aqi <= 100) return { label: 'categories.moderate', color: theme.colors.aqi.moderate, bg: '#D5E3FF' };
+    if (aqi <= 150) return { label: 'categories.poor', color: theme.colors.aqi.poor, bg: '#FED0B9' };
+    if (aqi <= 200) return { label: 'categories.unhealthy', color: theme.colors.aqi.unhealthy, bg: '#FA746F40' };
+    return { label: 'categories.severe', color: theme.colors.aqi.severe, bg: '#6E0A1220' };
 };
 
 export const AQICard = React.memo(function AQICard({ data, onAskAI, onRefresh, isRefreshing }: AQICardProps) {
     const { t } = useTranslation();
-    const status = getAQIStatus(data.aqi);
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
+    const status = getAQIStatus(data.aqi, GenZTheme);
 
     // Calculate pointer position (percentage)
     const maxAQI = 500; 
@@ -107,12 +110,12 @@ export const AQICard = React.memo(function AQICard({ data, onAskAI, onRefresh, i
     );
 });
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         backgroundColor: GenZTheme.cards.background,
         borderRadius: GenZTheme.borderRadius.xl,
-        marginHorizontal: 16,
         padding: 32,
+        marginHorizontal: 16,
         ...GenZTheme.cards.shadow,
     },
     header: {

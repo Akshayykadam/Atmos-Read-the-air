@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { MapStation } from '../services/aqiApi';
 
 interface StationPickerProps {
@@ -10,6 +11,8 @@ interface StationPickerProps {
 }
 
 export const StationPicker = React.memo(function StationPicker({ stations, selectedUid, onSelectStation }: StationPickerProps) {
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
     const getAQIColor = (value: number) => {
         if (value <= 50) return GenZTheme.colors.aqi.good;
         if (value <= 100) return GenZTheme.colors.aqi.moderate;
@@ -70,9 +73,9 @@ export const StationPicker = React.memo(function StationPicker({ stations, selec
     );
 });
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
-        marginTop: 8,
+        marginTop: 24,
         marginBottom: 24,
     },
     title: {

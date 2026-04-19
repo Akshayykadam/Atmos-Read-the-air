@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { City, INDIAN_CITIES } from '../constants/cities';
 import { getRecentCities, addRecentCity } from '../services/cacheService';
-import { GenZTheme } from '../constants/Theme';
 import { searchStations } from '../services/aqiApi';
 
 interface CitySearchProps {
@@ -25,6 +26,8 @@ interface CitySearchProps {
 
 export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
     const { t } = useTranslation();
+    const { theme: GenZTheme } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<City[]>([]);
     const [recentCities, setRecentCities] = useState<City[]>([]);
@@ -186,7 +189,7 @@ export function CitySearch({ onSelectCity, currentCityId }: CitySearchProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: GenZTheme.background, // Match screen background

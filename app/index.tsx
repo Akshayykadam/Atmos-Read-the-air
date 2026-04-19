@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Ionicons } from '@expo/vector-icons';
-import { GenZTheme } from '../constants/Theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeType } from '../constants/Theme';
 import { AQICard } from '../components/AQICard';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { AQILoading } from '../components/AQILoading';
@@ -30,6 +31,8 @@ export default function HomeScreen() {
     const router = useRouter();
     const { t, i18n } = useTranslation();
     const insets = useSafeAreaInsets();
+    const { theme: GenZTheme, toggleTheme, isDark } = useTheme();
+    const styles = React.useMemo(() => getStyles(GenZTheme), [GenZTheme]);
 
     const [aqiData, setAqiData] = useState<AQIData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -203,6 +206,9 @@ export default function HomeScreen() {
                     <Pressable style={styles.iconButton} onPress={() => setShowLanguageSelector(true)}>
                         <Ionicons name="language-outline" size={20} color={GenZTheme.text.primary} />
                     </Pressable>
+                    <Pressable style={styles.iconButton} onPress={toggleTheme}>
+                        <Ionicons name={isDark ? "sunny-outline" : "moon-outline"} size={20} color={GenZTheme.text.primary} />
+                    </Pressable>
                 </View>
             </View>
 
@@ -293,7 +299,7 @@ export default function HomeScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (GenZTheme: ThemeType) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: GenZTheme.background,
